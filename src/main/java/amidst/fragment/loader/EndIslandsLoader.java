@@ -13,7 +13,6 @@ import amidst.mojangapi.world.coordinates.Coordinates;
 import amidst.mojangapi.world.oracle.EndIsland;
 import amidst.mojangapi.world.oracle.EndIslandOracle;
 
-//TODO: use longs?
 @NotThreadSafe
 public class EndIslandsLoader extends FragmentLoader {
 	private final EndIslandOracle endIslandOracle;

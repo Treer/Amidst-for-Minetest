@@ -61,7 +61,8 @@ public class CriterionJsonBase extends CriterionJson {
 
 		if(shape == null)
 			shape = ctx.getShape();
-		
+
+		//TODO implement clusters
 		if(cluster != null)
 			ctx.unsupportedAttribute("cluster");
 		

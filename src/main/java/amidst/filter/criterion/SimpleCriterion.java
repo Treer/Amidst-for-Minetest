@@ -38,17 +38,6 @@ public class SimpleCriterion implements Criterion<SimpleCriterion.Result> {
 		return new Result();
 	}
 
-	@Override
-	public Region.Box getNextRegionToCheck(ResultsMap map) {
-		Result res = map.get(this);
-		if(res == null)
-			return null;
-		if(res.found != null || res.regionsToTest.isEmpty())
-			return null;
-		
-		return res.regionsToTest.iterator().next();
-	}
-	
 	public class Result implements CriterionResult {
 		private Set<Region.Box> regionsToTest;
 		Coordinates found = null;
@@ -70,7 +59,15 @@ public class SimpleCriterion implements Criterion<SimpleCriterion.Result> {
 				return TriState.FALSE;
 			return TriState.UNKNOWN;
 		}
-
+		
+		@Override
+		public Region.Box getNextRegionToCheck(ResultsMap map) {
+			if(found != null || regionsToTest.isEmpty())
+				return null;
+			
+			return regionsToTest.iterator().next();
+		}
+		
 		@Override
 		public void checkRegionAndUpdate(ResultsMap map, World world, Coordinates offset, Region.Box region) {
 			if(regionsToTest.remove(region)) {

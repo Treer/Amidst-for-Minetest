@@ -22,7 +22,8 @@ public class CriterionJsonOr extends CriterionJson {
 	public CriterionJsonOr() {}
 	
 	@Override
-	protected Optional<Criterion<?>> doValidate(CriterionJsonContext ctx) {		
+	protected Optional<Criterion<?>> doValidate(CriterionJsonContext ctx) {
+		//TODO implement minScore attribute
 		if(minScore != Integer.MIN_VALUE)
 			ctx.unsupportedAttribute("minScore");
 		
@@ -32,6 +33,7 @@ public class CriterionJsonOr extends CriterionJson {
 		if(min > or.size())
 			ctx.error("the min attribute can't be greater than the number of children (" + or.size() + ")");
 		
+		//TODO implement min attribute
 		if(min != 1)
 			ctx.unsupportedAttribute("min");
 		

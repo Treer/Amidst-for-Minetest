@@ -33,21 +33,6 @@ public class MatchAnyCriterion implements Criterion<MatchAnyCriterion.Result> {
 		return new Result();
 	}
 	
-	@Override
-	public Region.Box getNextRegionToCheck(ResultsMap map) {
-		Result res = map.get(this);
-		if(res == null)
-			return null;
-			
-		for(Criterion<?> c: res.undecided) {
-			Region.Box r = c.getNextRegionToCheck(map);
-			if(r != null)
-				return r;
-		}
-		
-		return null;
-	}
-	
 	public class Result implements CriterionResult {
 		private List<Criterion<?>> undecided;
 		private boolean isMatch;
@@ -69,6 +54,17 @@ public class MatchAnyCriterion implements Criterion<MatchAnyCriterion.Result> {
 			if(undecided.isEmpty())
 				return TriState.FALSE;
 			return TriState.UNKNOWN;
+		}
+		
+		@Override
+		public Region.Box getNextRegionToCheck(ResultsMap map) {
+			for(Criterion<?> c: undecided) {
+				Region.Box r = c.getNextRegionToCheck(map);
+				if(r != null)
+					return r;
+			}
+			
+			return null;
 		}
 		
 		@Override

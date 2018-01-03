@@ -54,7 +54,7 @@ public abstract class CriterionJson {
 			criterion = doValidate(ctx);
 		}
 		
-			
+		//TODO implement score attribute
 		if(score != 0) {
 			ctx.unsupportedAttribute("score");
 			return Optional.empty();

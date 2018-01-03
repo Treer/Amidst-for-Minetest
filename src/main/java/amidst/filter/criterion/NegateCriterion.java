@@ -30,11 +30,6 @@ public class NegateCriterion implements Criterion<NegateCriterion.Result> {
 	public Result createResult() {
 		return new Result(TriState.UNKNOWN);
 	}
-
-	@Override
-	public Region.Box getNextRegionToCheck(ResultsMap map) {
-		return criterion.getNextRegionToCheck(map);
-	}
 	
 	public class Result implements CriterionResult {
 		TriState state;
@@ -46,6 +41,11 @@ public class NegateCriterion implements Criterion<NegateCriterion.Result> {
 		@Override
 		public TriState hasMatched() {
 			return state;
+		}
+
+		@Override
+		public Region.Box getNextRegionToCheck(ResultsMap map) {
+			return criterion.getNextRegionToCheck(map);
 		}
 
 		@Override

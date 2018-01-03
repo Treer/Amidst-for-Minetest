@@ -14,7 +14,13 @@ public interface Criterion<R extends CriterionResult> {
 	
 	public R createResult();
 	
-	public Region.Box getNextRegionToCheck(ResultsMap map);
+	public default Region.Box getNextRegionToCheck(ResultsMap map) {
+		R res = map.get(this);
+		if(res == null)
+			return null;
+		
+		return res.getNextRegionToCheck(map);
+	}
 	
 	public default TriState checkRegion(ResultsMap map, World world, Coordinates offset, Region.Box region) {
 		Objects.requireNonNull(region);

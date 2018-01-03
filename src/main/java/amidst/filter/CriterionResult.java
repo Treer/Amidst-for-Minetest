@@ -8,6 +8,8 @@ import amidst.util.TriState;
 public interface CriterionResult {
 	public TriState hasMatched();
 	
+	public Region.Box getNextRegionToCheck(ResultsMap map);
+	
 	public void checkRegionAndUpdate(ResultsMap map, World world, Coordinates offset, Region.Box region);
 	
 	public default void addItemToWorldResult(WorldFilterResult result) {
