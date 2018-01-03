@@ -4,7 +4,7 @@ import amidst.documentation.GsonObject;
 import amidst.documentation.Immutable;
 
 @Immutable
-@GsonObject
+@GsonObject(ignoreUnknown=true)
 public class TexturesPropertyJson {
 	private volatile TexturesJson textures;
 
