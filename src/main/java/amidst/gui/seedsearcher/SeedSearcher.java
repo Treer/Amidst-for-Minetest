@@ -38,14 +38,14 @@ public class SeedSearcher {
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
-	public void search(SeedSearcherConfiguration configuration, Consumer<WorldFilterResult> onWorldFound) {
+	public void search(SeedSearcherConfiguration configuration, Consumer<Optional<WorldFilterResult>> onWorldSearched) {
 		this.isSearching = true;
 		this.isStopRequested = false;
-		workerExecutor.run(createSearcher(configuration), onWorldFound);
+		workerExecutor.run(createSearcher(configuration), onWorldSearched);
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
-	private ProgressReportingWorker<WorldFilterResult> createSearcher(SeedSearcherConfiguration configuration) {
+	private ProgressReportingWorker<Optional<WorldFilterResult>> createSearcher(SeedSearcherConfiguration configuration) {
 		return reporter -> this.trySearch(reporter, configuration);
 	}
 
@@ -70,7 +70,7 @@ public class SeedSearcher {
 	}
 
 	@CalledOnlyBy(AmidstThread.WORKER)
-	private void trySearch(ProgressReporter<WorldFilterResult> reporter, SeedSearcherConfiguration configuration) {
+	private void trySearch(ProgressReporter<Optional<WorldFilterResult>> reporter, SeedSearcherConfiguration configuration) {
 		try {
 			doSearch(reporter, configuration);
 		} catch (IllegalStateException | MinecraftInterfaceException e) {
@@ -83,7 +83,7 @@ public class SeedSearcher {
 	}
 
 	@CalledOnlyBy(AmidstThread.WORKER)
-	private void doSearch(ProgressReporter<WorldFilterResult> reporter, SeedSearcherConfiguration configuration)
+	private void doSearch(ProgressReporter<Optional<WorldFilterResult>> reporter, SeedSearcherConfiguration configuration)
 			throws IllegalStateException,
 			MinecraftInterfaceException {
 		do {
@@ -92,18 +92,17 @@ public class SeedSearcher {
 	}
 
 	@CalledOnlyBy(AmidstThread.WORKER)
-	private void doSearchOne(ProgressReporter<WorldFilterResult> reporter, SeedSearcherConfiguration configuration)
+	private void doSearchOne(ProgressReporter<Optional<WorldFilterResult>> reporter, SeedSearcherConfiguration configuration)
 			throws IllegalStateException,
 			MinecraftInterfaceException {
 		while (!isStopRequested) {
 			World world = runningLauncherProfile.createWorld(new WorldOptions(WorldSeed.random(), configuration.getWorldType()));
 			Optional<WorldFilterResult> result = configuration.getWorldFilter().match(world);
-			if (result.isPresent()) {
-				reporter.report(result.get());
-				world.dispose();
+			reporter.report(result);
+			world.dispose();
+			if(result.isPresent()) {
 				break;
 			}
-			world.dispose();
 		}
 	}
 }

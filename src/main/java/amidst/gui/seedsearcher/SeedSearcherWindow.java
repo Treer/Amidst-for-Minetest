@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
@@ -72,6 +73,7 @@ public class SeedSearcherWindow {
 	private final JFrame frame;
 	
 	private final DefaultListModel<WorldFilterResult> worldsFound;
+	private int worldsSearched;
 	private final DefaultListModel<Map.Entry<Coordinates, ResultItem>> worldItems;
 
 	@CalledOnlyBy(AmidstThread.EDT)
@@ -271,9 +273,10 @@ public class SeedSearcherWindow {
 			seedSearcher.stop();
 		} else {
 			worldsFound.clear();
+			worldsSearched = 0;
 			try {
 				SeedSearcherConfiguration seedSearcherConfiguration = createSeedSearcherConfiguration();
-				seedSearcher.search(seedSearcherConfiguration, world -> worldFound(world));
+				seedSearcher.search(seedSearcherConfiguration, this::worldSearched);
 				
 			} catch (WorldFilterParseException e) {
 				AmidstLogger.warn("invalid configuration: {}", e.getMessage());
@@ -298,26 +301,31 @@ public class SeedSearcherWindow {
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
-	private void worldFound(WorldFilterResult filterResult) {
-		worldsFound.addElement(filterResult);
-		if(worldsFound.size() == 1)
-			worldsFoundList.setSelectedIndex(0);
+	private void worldSearched(Optional<WorldFilterResult> filterResult) {
+		worldsSearched++;
 		
-		int maxHits = (int) searchMaxHitsSpinner.getValue();
-		if(maxHits > 0 && worldsFound.size() >= maxHits)
-			seedSearcher.stop();
+		if(filterResult.isPresent()) {
+			worldsFound.addElement(filterResult.get());
+			if(worldsFound.size() == 1)
+				worldsFoundList.setSelectedIndex(0);
+			
+			int maxHits = (int) searchMaxHitsSpinner.getValue();
+			if(maxHits > 0 && worldsFound.size() >= maxHits)
+				seedSearcher.stop();
+		}
 		
 		updateGUI();
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
 	private void updateGUI() {
+		String searchedText = worldsSearched == 0 ? "" : " (" + worldsSearched + " searched)";
 		int nbWorlds = worldsFound.size();
 		if(nbWorlds == 0)
-			worldsFoundLabel.setText("No worlds found");
+			worldsFoundLabel.setText("No worlds found" + searchedText);
 		else if(nbWorlds == 1)
-			worldsFoundLabel.setText("1 world found:");
-		else worldsFoundLabel.setText(nbWorlds + " worlds found:");
+			worldsFoundLabel.setText("1 world found" + searchedText + ":");
+		else worldsFoundLabel.setText(nbWorlds + " worlds found" + searchedText + ":");
 		
 		if (seedSearcher.isSearching() && !seedSearcher.isStopRequested()) {
 			searchButton.setText("Stop");
