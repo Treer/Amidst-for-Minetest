@@ -6,7 +6,7 @@ import java.util.Optional;
 import amidst.documentation.GsonObject;
 import amidst.documentation.JsonField;
 import amidst.filter.Criterion;
-import amidst.filter.criterion.MatchAnyCriterion;
+import amidst.filter.criterion.MatchSomeCriterion;
 
 @GsonObject
 public class CriterionJsonOr extends CriterionJson {
@@ -33,14 +33,10 @@ public class CriterionJsonOr extends CriterionJson {
 		if(min > or.size())
 			ctx.error("the min attribute can't be greater than the number of children (" + or.size() + ")");
 		
-		//TODO implement min attribute
-		if(min != 1)
-			ctx.unsupportedAttribute("min");
-		
 		if(ctx.hasErrors())
 			return Optional.empty();
 		
 		return validateList(or, ctx, "or")
-				.map(l -> new MatchAnyCriterion(l));
+				.map(l -> new MatchSomeCriterion(l, min));
 	}
 }

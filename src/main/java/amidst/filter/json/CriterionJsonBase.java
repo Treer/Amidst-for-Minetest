@@ -20,7 +20,7 @@ import amidst.documentation.JsonField;
 import amidst.filter.BiomeConstraint;
 import amidst.filter.Criterion;
 import amidst.filter.StructureConstraint;
-import amidst.filter.criterion.MatchAnyCriterion;
+import amidst.filter.criterion.MatchSomeCriterion;
 import amidst.filter.criterion.SimpleCriterion;
 import amidst.mojangapi.world.biome.Biome;
 import amidst.mojangapi.world.coordinates.Region;
@@ -136,7 +136,7 @@ public class CriterionJsonBase extends CriterionJson {
 		if(list.size() == 1)
 			return Optional.of(list.get(0));
 
-		return Optional.of(new MatchAnyCriterion(list));
+		return Optional.of(new MatchSomeCriterion(list, 1));
 	}
 	
 

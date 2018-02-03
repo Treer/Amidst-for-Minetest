@@ -15,12 +15,17 @@ import amidst.mojangapi.world.coordinates.Region;
 import amidst.util.TriState;
 
 @Immutable
-public class MatchAnyCriterion implements Criterion<MatchAnyCriterion.Result> {
+public class MatchSomeCriterion implements Criterion<MatchSomeCriterion.Result> {
 	
 	private final List<Criterion<?>> criteria;
+	private final int minCriteria;
 	
-	public MatchAnyCriterion(List<Criterion<?>> list) {
+	public MatchSomeCriterion(List<Criterion<?>> list, int min) {
+		if(min <= 0 && min > list.size())
+			throw new IllegalArgumentException("min must be between 0 and list.size()");
+		
 		criteria = Collections.unmodifiableList(new ArrayList<>(list));
+		this.minCriteria = min;
 	}
 	
 	@Override
@@ -35,21 +40,21 @@ public class MatchAnyCriterion implements Criterion<MatchAnyCriterion.Result> {
 	
 	public class Result implements CriterionResult {
 		private List<Criterion<?>> undecided;
-		private boolean isMatch;
+		private int matched;
 		
 		private Result() {
 			this.undecided = new ArrayList<>(criteria);
-			this.isMatch = false;
+			this.matched = 0;
 		}
 		
 		private Result(Result r) {
 			this.undecided = new ArrayList<>(r.undecided);
-			this.isMatch = r.isMatch;
+			this.matched = r.matched;
 		}
 		
 		@Override
 		public TriState hasMatched() {
-			if(isMatch)
+			if(matched >= minCriteria)
 				return TriState.TRUE;
 			if(undecided.isEmpty())
 				return TriState.FALSE;
@@ -77,9 +82,17 @@ public class MatchAnyCriterion implements Criterion<MatchAnyCriterion.Result> {
 					iter.remove();
 				
 				if(match == TriState.TRUE) {
-					isMatch = true;
-					undecided.clear();
+					matched++;
+					//We found enough criteria, we can stop
+					if(matched >= minCriteria)
+						undecided.clear();
 					break;
+					
+				} else if(match == TriState.FALSE) {
+					//We will never find enough criteria, we can stop
+					int leftToMatch = minCriteria - matched;
+					if(undecided.size() < leftToMatch)
+						undecided.clear();
 				}
 			}
 		}

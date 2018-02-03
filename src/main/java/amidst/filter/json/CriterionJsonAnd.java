@@ -6,7 +6,7 @@ import java.util.Optional;
 import amidst.documentation.GsonObject;
 import amidst.documentation.JsonField;
 import amidst.filter.Criterion;
-import amidst.filter.criterion.MatchAllCriterion;
+import amidst.filter.criterion.MatchSomeCriterion;
 
 @GsonObject
 public class CriterionJsonAnd extends CriterionJson {
@@ -18,6 +18,6 @@ public class CriterionJsonAnd extends CriterionJson {
 	@Override
 	protected Optional<Criterion<?>> doValidate(CriterionJsonContext ctx) {
 		return validateList(and, ctx, "and")
-				.map(MatchAllCriterion::new);
+				.map(list -> new MatchSomeCriterion(list, list.size()));
 	}
 }
