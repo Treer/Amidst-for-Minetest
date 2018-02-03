@@ -19,7 +19,10 @@ import amidst.util.BiomePredicate;
 public class BiomeData {
 	//We use an int array so we can directly reference the
 	//Minecraft arrays, without any copying.
-	private int[] data;
+	private int[] dataInt;
+	
+	//This short array is used when we copy data, to decrease memory usage.
+	private short[] dataShort;
 	
 	private int stride; //number of elems between two rows
 	private int width;  //size of a row
@@ -28,49 +31,71 @@ public class BiomeData {
 	
 	private boolean isOwned;
 	
-	private BiomeData(int[] data, int width, int height, int stride, int offset, boolean isOwned) {
-		this.data = data;
+	private BiomeData(int[] dataInt, short[] dataShort, int width, int height, int stride, int offset, boolean isOwned) {
+		this.dataInt = dataInt;
+		this.dataShort = dataShort;
 		this.width = width;
 		this.height = height;
 		this.stride = stride;
 		this.offset = offset;
 		this.isOwned = isOwned;
 		
+		if((dataInt == null) == (dataShort == null))
+			throw new IllegalArgumentException("exactly one of dataInt and dataShort must be null");
+		
+		if(isOwned && dataInt != null)
+			throw new IllegalArgumentException("an owned BiomeData must use a short[]");
+		
 		if(stride < width)
 			throw new IllegalArgumentException("invalid stride");
-
-		if(offset < 0 || width < 0 || height < 0 || translateIndex(width-1, height-1) >= data.length)
+		
+		int size = dataInt == null ? dataShort.length : dataInt.length;
+		if(offset < 0 || width < 0 || height < 0 || translateIndex(width-1, height-1) >= size)
 			throw new IllegalArgumentException("invalid width/height/offset");
 	}
 	
+	//Create a non-owned BiomeData viewing into data
 	public BiomeData(int[] data, int width, int height) {		
-		this(data == null ? new int[width*height] : data, width, height, width, 0, true);
+		this(data, null, width, height, width, 0, false);
+	}
+	
+	//Create an empty owned BiomeData
+	public BiomeData(int width, int height) {
+		this(null, new short[width*height], width, height, width, 0, true);
+	}
+	
+	//Create an owned BiomeData
+	public BiomeData(short[] data, int width, int height) {
+		this(null, data, width, height, width, 0, true);
 	}
 	
 	public BiomeData view() {
-		return new BiomeData(data, width, height, stride, offset, false);
+		return new BiomeData(dataInt, dataShort, width, height, stride, offset, false);
 	}
 	
 	public BiomeData view(int offX, int offY, int w, int h) {
 		if(offX < 0 || offY < 0 || offX+w > width || offY+h > height)
 			throw new IllegalArgumentException("invalid offsets");
 		
-		return new BiomeData(data, w, h, stride, translateIndex(offX, offY), false);
+		return new BiomeData(dataInt, dataShort, w, h, stride, translateIndex(offX, offY), false);
 	}
 	
 	public void copyFrom(BiomeData other) {
-		width = other.width;
-		height = other.height;
-		stride = other.stride;
-		offset = other.offset;
-		
 		if(isOwned) {
-			if(other.getSize() > data.length)
-				data = new int[other.getSize()];
+			if(other.getSize() > dataShort.length)
+				dataShort = new short[other.getSize()];
 			
-			fillData(other.data);
+			if(other.dataInt == null)
+				fillData(other, other.dataShort);
+			else fillData(other, other.dataInt);
+			
 		} else {
-			data = other.data;
+			width = other.width;
+			height = other.height;
+			stride = other.stride;
+			offset = other.offset;
+			dataInt = other.dataInt;
+			dataShort = other.dataShort;
 		}
 	}
 	
@@ -82,27 +107,58 @@ public class BiomeData {
 		if(isOwned)
 			return;
 
-		int[] old = data;
-		data = new int[getWidth()*getHeight()];
-		fillData(old);
+		if(dataInt == null) {
+			short[] old = dataShort;
+			dataShort = new short[getWidth()*getHeight()];
+			fillData(this, old);
+			
+		} else {
+			dataShort = new short[getWidth()*getHeight()];
+			fillData(this, dataInt);
+			dataInt = null;
+		}
 		
 		isOwned = true;
 	}
 	
-	private void fillData(int[] src) {
-		if(stride == width) {
+	private void fillData(BiomeData other, short[] src) {
+		width = other.getWidth();
+		height = other.getHeight();
+		
+		if(other.stride == width) {
 			//no gaps: we can do a single copy
-			System.arraycopy(src, translateIndex(0, 0), data, 0, getSize());
+			System.arraycopy(src, translateIndex(0, 0), dataShort, 0, getSize());
 		} else {
 			for(int j = 0; j < height; j++)
-				System.arraycopy(src, translateIndex(0, j), data, j*width, width);
+				System.arraycopy(src, translateIndex(0, j), dataShort, j*width, width);
 		}
 		
-		width = getWidth();
-		height = getHeight();
 		stride = width;
 		offset = 0;
 	}
+	
+	private void fillData(BiomeData other, int[] src) {
+		width = other.getWidth();
+		height = other.getHeight();
+		
+		if(other.stride == width) {
+			//no gaps: we can do a basic for loop
+			int off = translateIndex(0, 0);
+			int size = getSize();
+			for(int i = 0; i < size; i++)
+				dataShort[i] = (short) src[off+i];
+		} else {
+			for(int j = 0; j < height; j++) {
+				int off = translateIndex(0, j);
+				for(int i = 0; i < width; i++)
+					dataShort[j*width+i] = (short) src[off+i];
+			}
+		}
+		
+		stride = width;
+		offset = 0;
+	}
+
 	
 	public int getWidth() {
 		return width;
@@ -117,14 +173,17 @@ public class BiomeData {
 	}
 	
 	public short get(int x, int y) {
-		return (short) data[translateIndex(x, y)];
+		int idx = translateIndex(x, y);
+		return dataInt != null ? (short) dataInt[idx] : dataShort[idx];
 	}
 	
 	public<T> T findFirst(BiomeFunction<T> fn) {
 		int start = offset;
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
-				T obj = fn.apply(x, y, (short) data[start+x]);
+				int idx = start+x;
+				short biome = dataInt != null ? (short) dataInt[idx] : dataShort[idx];
+				T obj = fn.apply(x, y, biome);
 				if(obj != null)
 					return obj;
 			}
@@ -138,7 +197,9 @@ public class BiomeData {
 		int start = offset;
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
-				if(!pred.test(x, y, (short) data[start+x]))
+				int idx = start+x;
+				short biome = dataInt != null ? (short) dataInt[idx] : dataShort[idx];
+				if(!pred.test(x, y, biome))
 					return false;
 			}
 			start += stride;

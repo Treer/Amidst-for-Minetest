@@ -107,7 +107,7 @@ public class Fragment {
 	}
 
 	public void initBiomeData(int width, int height) {
-		biomeData = new BiomeData(null, width, height);
+		biomeData = new BiomeData(width, height);
 	}
 
 	@CalledOnlyBy(AmidstThread.FRAGMENT_LOADER)

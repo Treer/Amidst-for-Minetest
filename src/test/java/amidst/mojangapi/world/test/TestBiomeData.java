@@ -10,8 +10,8 @@ public class TestBiomeData {
 	private static int DATA_HEIGHT = 24;
 	
 	private BiomeData makeData() {
-		int[] arr = new int[DATA_WIDTH*DATA_HEIGHT];
-		for(int i = 0; i < arr.length; i++)
+		short[] arr = new short[DATA_WIDTH*DATA_HEIGHT];
+		for(short i = 0; i < arr.length; i++)
 			arr[i] = i;
 		
 		return new BiomeData(arr, DATA_WIDTH, DATA_HEIGHT);
@@ -20,7 +20,7 @@ public class TestBiomeData {
 	private void testView(BiomeData data, int offX, int offY, int w, int h) {
 		BiomeData view = data.view(offX, offY, w, h);
 		
-		//Test that the view correctly map indexes
+		//Test that the view correctly map indices
 		for(int i = 0; i < w; i++) {
 			for(int j = 0; j < h; j++) {
 				Assert.assertEquals(data.get(i+offX, j+offY), view.get(i, j));

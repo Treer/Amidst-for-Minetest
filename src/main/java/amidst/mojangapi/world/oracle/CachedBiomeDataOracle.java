@@ -78,7 +78,7 @@ public class CachedBiomeDataOracle extends BiomeDataOracle {
 
 	private BiomeData createDataArray(Resolution resolution) {
 		Region r = cacheRegion.getAs(resolution);
-		return new BiomeData(null, r.getWidth(), r.getHeight());
+		return new BiomeData(r.getWidth(), r.getHeight());
 	}
 
 
