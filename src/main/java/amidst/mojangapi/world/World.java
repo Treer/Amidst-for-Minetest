@@ -80,7 +80,7 @@ public class World {
 		this.endCityProducer = endCityProducer;
 	}
 	
-	public World cached(Region.Box region) {
+	public World cached() {
 		//@formatter: off
 		return new World(
 			onDisposeWorld,
@@ -88,7 +88,7 @@ public class World {
 			movablePlayerList,
 			recognisedVersion,
 			versionFeatures,
-			new CachedBiomeDataOracle(biomeDataOracle, region),
+			new CachedBiomeDataOracle(biomeDataOracle, Region.box(0, 0, 0, 0)),
 			endIslandOracle,
 			slimeChunkOracle,
 			worldSpawnOracle,

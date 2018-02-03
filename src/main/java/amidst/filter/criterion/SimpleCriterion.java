@@ -72,9 +72,10 @@ public class SimpleCriterion implements Criterion<SimpleCriterion.Result> {
 		public void checkRegionAndUpdate(ResultsMap map, World world, Coordinates offset, Region.Box region) {
 			if(regionsToTest.remove(region)) {
 				Optional<Coordinates> pos = constraint.checkRegion(world, region.move(offset));
-				if(pos.isPresent())
+				if(pos.isPresent()) {
 					found = pos.get();
-				regionsToTest.clear();
+					regionsToTest.clear();
+				}
 			}
 		}
 		

@@ -66,13 +66,13 @@ public class WorldFilter {
 		
 		if(region == null)
 			return true;
-		
-		world = world.cached(region);
+
 		CachedBiomeDataOracle oracle = (CachedBiomeDataOracle) world.getBiomeDataOracle();
+		oracle.moveCacheTo(region.move(offset));
 		
 		while(criterion.checkRegion(map, world, offset, region) == TriState.UNKNOWN) {
 			region = criterion.getNextRegionToCheck(map);
-			oracle.moveCacheTo(region);
+			oracle.moveCacheTo(region.move(offset));
 		}
 		
 		return res.hasMatched() == TriState.TRUE;
@@ -82,6 +82,8 @@ public class WorldFilter {
 		ResultsMap results = this.results.copy();
 		
 		Coordinates offset = getGlobalCenter(world);
+		
+		world = world.cached();
 		
 		if(!isValid(results, world, offset, match))
 			return Optional.empty();

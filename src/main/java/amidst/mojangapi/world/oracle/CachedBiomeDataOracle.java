@@ -38,8 +38,10 @@ public class CachedBiomeDataOracle extends BiomeDataOracle {
 	protected synchronized BiomeData doGetBiomeData(Region.Box region, boolean useQuarterResolution)
 			throws MinecraftInterfaceException {
 		Region.Box cacheReg = useQuarterResolution ? cacheRegionQuarter : cacheRegion;
-		if(!cacheReg.contains(region))
+		if(!cacheReg.contains(region)) {
 			return oracle.doGetBiomeData(region, useQuarterResolution);
+
+		}
 
 		Coordinates offset = region.getCorner().substract(cacheReg.getCorner());
 		return getCacheData(useQuarterResolution).view(offset.getX(), offset.getY(), region.getWidth(), region.getHeight());
@@ -58,6 +60,7 @@ public class CachedBiomeDataOracle extends BiomeDataOracle {
 			
 
 			cacheQuarter.copyFrom(oracle.doGetBiomeData(cacheRegionQuarter, true));
+			isCacheQuarterValid = true;
 			return cacheQuarter;
 
 		} else {
@@ -68,6 +71,7 @@ public class CachedBiomeDataOracle extends BiomeDataOracle {
 				cache = createDataArray(r);
 
 			cache.copyFrom(oracle.doGetBiomeData(cacheRegion, true));
+			isCacheValid = true;
 			return cache;
 		}
 	}
@@ -94,11 +98,13 @@ public class CachedBiomeDataOracle extends BiomeDataOracle {
 			cache = null;
 			cacheQuarter = null;
 			isCacheValid = false;
+			isCacheQuarterValid = false;
 		} else {
-			isCacheValid = old.getCorner().equals(r.getCorner());
+			boolean valid = old.getCorner().equals(r.getCorner());
+			isCacheValid &= valid;
+			isCacheQuarterValid &= valid;
 		}
 
-		isCacheQuarterValid = isCacheValid;
 	}
 }
 
