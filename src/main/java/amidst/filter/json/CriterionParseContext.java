@@ -10,7 +10,7 @@ import java.util.function.Function;
 import amidst.filter.Criterion;
 import amidst.mojangapi.world.coordinates.Coordinates;
 
-public class CriterionJsonContext {
+public class CriterionParseContext {
 	private Globals globals;
 	
 	private boolean hasErrors = false;
@@ -18,6 +18,7 @@ public class CriterionJsonContext {
 	private String name = "";
 	private String shape;
 	private Coordinates center = null;
+	private int radius = -1;
 	
 	private static class Globals {
 		public Function<String, CriterionJson> supplier;
@@ -34,31 +35,32 @@ public class CriterionJsonContext {
 		}
 	}
 	
-	public CriterionJsonContext(WorldFilterJson.Defaults defaults, Function<String, CriterionJson> criterionSupplier) {
+	public CriterionParseContext(WorldFilterJson.Defaults defaults, Function<String, CriterionJson> criterionSupplier) {
 		shape = defaults.shape;
 		center = Coordinates.origin();
 		globals = new Globals(criterionSupplier);
 	}
 
 	
-	private CriterionJsonContext(CriterionJsonContext ctx) {
+	private CriterionParseContext(CriterionParseContext ctx) {
 		globals = ctx.globals;
 		name = ctx.name;
 		hasErrors = false;
 		shape = ctx.shape;
 		center = ctx.center;
+		radius = ctx.radius;
 	}
 	
-	public CriterionJsonContext copy() {
-		return new CriterionJsonContext(this);
+	public CriterionParseContext copy() {
+		return new CriterionParseContext(this);
 	}
 	
 	public String getName() {
 		return name.isEmpty() ? "<root>" : name;
 	}
 	
-	public CriterionJsonContext withName(String name) {
-		CriterionJsonContext ctx = copy();
+	public CriterionParseContext withName(String name) {
+		CriterionParseContext ctx = copy();
 		if(!ctx.name.isEmpty())
 			ctx.name += ".";
 		ctx.name += name;
@@ -69,8 +71,8 @@ public class CriterionJsonContext {
 		return shape;
 	}
 	
-	public CriterionJsonContext withShape(String shape) {
-		CriterionJsonContext ctx = copy();
+	public CriterionParseContext withShape(String shape) {
+		CriterionParseContext ctx = copy();
 		ctx.shape = shape;
 		return ctx;
 	}
@@ -79,10 +81,20 @@ public class CriterionJsonContext {
 		return center;
 	}
 	
-	public CriterionJsonContext withCenter(Coordinates center) {
-		CriterionJsonContext ctx = copy();
+	public CriterionParseContext withCenter(Coordinates center) {
+		CriterionParseContext ctx = copy();
 		ctx.center = center;
 		return ctx;
+	}
+	
+	public CriterionParseContext withRadius(int radius) {
+		CriterionParseContext ctx = copy();
+		ctx.radius = radius;
+		return ctx;
+	}
+	
+	public int getRadius() {
+		return radius;
 	}
 	
 	public Optional<Criterion<?>> convertCriterion(String name) {
@@ -102,7 +114,7 @@ public class CriterionJsonContext {
 		}
 		
 		globals.mappings.put(name, null);
-		CriterionJsonContext ctx = copy();
+		CriterionParseContext ctx = copy();
 		ctx.name = name;
 		Optional<Criterion<?>> c = json.validate(ctx);
 		globals.mappings.put(name, c);

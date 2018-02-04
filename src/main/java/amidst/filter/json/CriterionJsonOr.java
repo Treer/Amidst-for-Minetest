@@ -9,7 +9,7 @@ import amidst.filter.Criterion;
 import amidst.filter.criterion.MatchSomeCriterion;
 
 @GsonObject
-public class CriterionJsonOr extends CriterionJson {
+public class CriterionJsonOr extends CriterionJsonContainer {
 	@JsonField()
 	public List<CriterionJson> or;
 	
@@ -22,7 +22,7 @@ public class CriterionJsonOr extends CriterionJson {
 	public CriterionJsonOr() {}
 	
 	@Override
-	protected Optional<Criterion<?>> doValidate(CriterionJsonContext ctx) {
+	protected Optional<Criterion<?>> doValidate(CriterionParseContext ctx) {
 		//TODO implement minScore attribute
 		if(minScore != Integer.MIN_VALUE)
 			ctx.unsupportedAttribute("minScore");

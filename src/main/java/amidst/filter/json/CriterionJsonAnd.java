@@ -9,14 +9,14 @@ import amidst.filter.Criterion;
 import amidst.filter.criterion.MatchSomeCriterion;
 
 @GsonObject
-public class CriterionJsonAnd extends CriterionJson {
+public class CriterionJsonAnd extends CriterionJsonContainer {
 	@JsonField()
 	public List<CriterionJson> and;
 
 	public CriterionJsonAnd() {}
 	
 	@Override
-	protected Optional<Criterion<?>> doValidate(CriterionJsonContext ctx) {
+	protected Optional<Criterion<?>> doValidate(CriterionParseContext ctx) {
 		return validateList(and, ctx, "and")
 				.map(list -> new MatchSomeCriterion(list, list.size()));
 	}

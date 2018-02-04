@@ -35,13 +35,19 @@ public class StrictTypeAdapterFactory implements TypeAdapterFactory {
 	private static List<Class<?>> BASE_JSON_CLASSES = Arrays.asList(new Class<?>[]{
 		Map.class,
 		List.class,
-		String.class
+		String.class,
+		Boolean.class,
+		Byte.class,
+		Short.class,
+		Integer.class,
+		Long.class,
+		Double.class,
+		Float.class,	
 	});
 
 	@Override
 	public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
 		Class<?> rawType = type.getRawType();
-		
 		if(rawType.isPrimitive() || rawType.isEnum() || BASE_JSON_CLASSES.contains(rawType))
 			return null;
 		

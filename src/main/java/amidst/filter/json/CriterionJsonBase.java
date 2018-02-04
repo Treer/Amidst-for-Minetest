@@ -23,13 +23,18 @@ import amidst.filter.StructureConstraint;
 import amidst.filter.criterion.MatchSomeCriterion;
 import amidst.filter.criterion.SimpleCriterion;
 import amidst.mojangapi.world.biome.Biome;
+import amidst.mojangapi.world.coordinates.Coordinates;
 import amidst.mojangapi.world.coordinates.Region;
 import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
 
 @GsonObject
 public class CriterionJsonBase extends CriterionJson {
-	@JsonField()
-	public int radius;
+	
+	@JsonField(optional=true)
+	public Coordinates center = Coordinates.origin();
+	
+	@JsonField(optional=true)
+	public Integer radius;
 	
 	@JsonField(optional=true)
 	public String shape = null;
@@ -57,7 +62,17 @@ public class CriterionJsonBase extends CriterionJson {
 	
 	
 	@Override
-	protected Optional<Criterion<?>> doValidate(CriterionJsonContext ctx) {
+	protected Optional<Criterion<?>> doValidate(CriterionParseContext ctx) {
+		
+		Coordinates center = ctx.getCenter().add(this.center);
+		int radius = ctx.getRadius();
+		if(this.radius != null) {
+			radius = this.radius;
+			if(radius <= 0)
+				ctx.error("the radius must be strictly positive (is " + radius + ")");
+		} else if(radius <= 0) {
+			ctx.error("a radius must be specified");
+		}
 
 		if(shape == null)
 			shape = ctx.getShape();
@@ -140,7 +155,7 @@ public class CriterionJsonBase extends CriterionJson {
 	}
 	
 
-	private Collection<Biome> getBiomeSet(CriterionJsonContext ctx) {
+	private Collection<Biome> getBiomeSet(CriterionParseContext ctx) {
 		Set<Biome> biomeSet = new HashSet<>();
 		for(String biomeName: biomes) {
 			if(Biome.exists(biomeName)) {
@@ -159,7 +174,7 @@ public class CriterionJsonBase extends CriterionJson {
 		return biomeSet;
 	}
 
-	private Collection<DefaultWorldIconTypes> getStructureSet(CriterionJsonContext ctx) {	
+	private Collection<DefaultWorldIconTypes> getStructureSet(CriterionParseContext ctx) {	
 		Set<DefaultWorldIconTypes> structSet = new HashSet<>();
 		if(structures == null)
 			return structSet;

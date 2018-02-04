@@ -46,7 +46,7 @@ public class WorldFilterJson {
 	
 	
 	public WorldFilter validate() throws WorldFilterParseException {
-		CriterionJsonContext ctx = new CriterionJsonContext(defaults, groups::get);
+		CriterionParseContext ctx = new CriterionParseContext(defaults, groups::get);
 		
 		Set<String> ignoreSet = makeIgnoreSet(ctx.withName("<ignore>"));
 		
@@ -65,7 +65,7 @@ public class WorldFilterJson {
 		return new WorldFilter(defaults.center, criteria, main);
 	}
 	
-	private Set<String> makeIgnoreSet(CriterionJsonContext ctx) {
+	private Set<String> makeIgnoreSet(CriterionParseContext ctx) {
 		for(String gname: ignore) {
 			if(!groups.containsKey(gname))
 				ctx.error("the group " + gname + " doesn't exist");
