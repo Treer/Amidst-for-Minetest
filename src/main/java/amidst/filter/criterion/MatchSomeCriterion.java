@@ -84,15 +84,18 @@ public class MatchSomeCriterion implements Criterion<MatchSomeCriterion.Result> 
 				if(match == TriState.TRUE) {
 					matched++;
 					//We found enough criteria, we can stop
-					if(matched >= minCriteria)
+					if(matched >= minCriteria) {
 						undecided.clear();
-					break;
+						break;
+					}
 					
 				} else if(match == TriState.FALSE) {
 					//We will never find enough criteria, we can stop
 					int leftToMatch = minCriteria - matched;
-					if(undecided.size() < leftToMatch)
+					if(undecided.size() < leftToMatch) {
 						undecided.clear();
+						break;
+					}
 				}
 			}
 		}
