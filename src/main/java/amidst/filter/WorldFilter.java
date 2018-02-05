@@ -62,16 +62,17 @@ public class WorldFilter {
 	private boolean isValid(ResultsMap map, World world, Coordinates offset, Criterion<?> criterion) {
 		CriterionResult res = map.get(criterion);
 		
-		Region.Box region = criterion.getNextRegionToCheck(map);
-		
-		if(region == null)
+		RegionInfo info = criterion.getNextRegionToCheck(map);
+		if(info == null)
 			return true;
+		
+		Region.Box region = info.getRegion();
 
 		CachedBiomeDataOracle oracle = (CachedBiomeDataOracle) world.getBiomeDataOracle();
 		oracle.moveCacheTo(region.move(offset));
 		
 		while(criterion.checkRegion(map, world, offset, region) == TriState.UNKNOWN) {
-			region = criterion.getNextRegionToCheck(map);
+			region = criterion.getNextRegionToCheck(map).getRegion();
 			oracle.moveCacheTo(region.move(offset));
 		}
 		

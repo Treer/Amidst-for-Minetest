@@ -126,10 +126,10 @@ public class CriterionJsonBase extends CriterionJson {
 		
 		if(structSet.isEmpty()) {
 			for(Biome b: biomeSet)
-				list.add(new BiomeCriterion(region, b, isChecked));
+				list.add(new BiomeCriterion(region, b, true, isChecked));
 		} else {
 			for(DefaultWorldIconTypes struct: structSet) {
-				list.add(new StructureCriterion(region, struct, biomeSet, isChecked));
+				list.add(new StructureCriterion(region, struct, biomeSet, true, isChecked));
 			}
 		}
 		

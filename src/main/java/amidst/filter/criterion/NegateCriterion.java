@@ -6,6 +6,7 @@ import java.util.List;
 import amidst.documentation.Immutable;
 import amidst.filter.Criterion;
 import amidst.filter.CriterionResult;
+import amidst.filter.RegionInfo;
 import amidst.filter.ResultsMap;
 import amidst.mojangapi.world.World;
 import amidst.mojangapi.world.coordinates.Coordinates;
@@ -44,7 +45,7 @@ public class NegateCriterion implements Criterion<NegateCriterion.Result> {
 		}
 
 		@Override
-		public Region.Box getNextRegionToCheck(ResultsMap map) {
+		public RegionInfo getNextRegionToCheck(ResultsMap map) {
 			return criterion.getNextRegionToCheck(map);
 		}
 

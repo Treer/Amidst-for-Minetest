@@ -14,7 +14,7 @@ public interface Criterion<R extends CriterionResult> {
 	
 	public R createResult();
 	
-	public default Region.Box getNextRegionToCheck(ResultsMap map) {
+	public default RegionInfo getNextRegionToCheck(ResultsMap map) {
 		R res = map.get(this);
 		if(res == null)
 			return null;

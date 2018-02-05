@@ -2,12 +2,14 @@ package amidst.filter.criterion;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
 import amidst.documentation.Immutable;
 import amidst.filter.Criterion;
 import amidst.filter.CriterionResult;
+import amidst.filter.RegionInfo;
 import amidst.filter.ResultsMap;
 import amidst.mojangapi.world.World;
 import amidst.mojangapi.world.coordinates.Coordinates;
@@ -62,14 +64,12 @@ public class MatchSomeCriterion implements Criterion<MatchSomeCriterion.Result> 
 		}
 		
 		@Override
-		public Region.Box getNextRegionToCheck(ResultsMap map) {
-			for(Criterion<?> c: undecided) {
-				Region.Box r = c.getNextRegionToCheck(map);
-				if(r != null)
-					return r;
-			}
-			
-			return null;
+		public RegionInfo getNextRegionToCheck(ResultsMap map) {
+			return undecided.stream()
+				.map(c -> c.getNextRegionToCheck(map))
+				.filter(i -> i != null)
+				.min(Comparator.comparingDouble(RegionInfo::getCost))
+				.orElse(null);
 		}
 		
 		@Override

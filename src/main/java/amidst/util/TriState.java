@@ -28,4 +28,8 @@ public enum TriState {
 			return TRUE;
 		return other;
 	}
+	
+	public static TriState from(boolean b) {
+		return b ? TRUE : FALSE;
+	}
 }

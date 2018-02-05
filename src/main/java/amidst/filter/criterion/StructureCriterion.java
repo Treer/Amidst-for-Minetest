@@ -42,10 +42,12 @@ public class StructureCriterion implements Criterion<StructureCriterion.Result> 
 	private final DefaultWorldIconTypes structure;
 	private final List<Biome> biomes;
 	private final boolean checkDistance;
+	private final boolean shortCircuit;
 	
-	public StructureCriterion(Region region, DefaultWorldIconTypes structure, Collection<Biome> biomes, boolean check) {
+	public StructureCriterion(Region region, DefaultWorldIconTypes structure, Collection<Biome> biomes, boolean shortCircuit, boolean check) {
 		this.region = region;
 		this.structure = structure;
+		this.shortCircuit = shortCircuit;
 		this.biomes = Collections.unmodifiableList(new ArrayList<>(biomes));
 		checkDistance = check;
 	}
@@ -96,6 +98,7 @@ public class StructureCriterion implements Criterion<StructureCriterion.Result> 
 	public class Result extends SubRegionResult {
 		Coordinates found;
 		Biome foundBiome;
+		double distSq = Double.POSITIVE_INFINITY;
 
 		private Result() {
 			super(region);
@@ -105,44 +108,69 @@ public class StructureCriterion implements Criterion<StructureCriterion.Result> 
 			super(other);
 			found = other.found;
 			foundBiome = other.foundBiome;
+			distSq = other.distSq;
 		}
 
 		@Override
-		protected boolean hasFound() {
-			return found != null;
+		protected Coordinates getFound() {
+			return found;
+		}
+		
+		@Override
+		protected Coordinates getCenter() {
+			return region.getCenter();
+		}
+		
+		@Override
+		protected boolean doShortCircuit() {
+			return shortCircuit;
 		}
 
 		@Override
-		protected void doCheckRegion(World world, Box region) {
+		protected void doCheckRegion(World world, Coordinates offset, Box region) {
 			WorldIconProducer<Void> producer = getStructureProducer(world, structure);
 			
-			for(WorldIcon icon: producer.getAt(region, null)) {
+			for(WorldIcon icon: producer.getAt(region.move(offset), null)) {
 				if(!icon.getName().equals(structure.getLabel()))
 					continue;
 
-				Coordinates pos = icon.getCoordinates();
+				Coordinates realPos = icon.getCoordinates();
+				Coordinates pos = realPos.substract(offset);
 				if(checkDistance && !StructureCriterion.this.region.contains(pos))
 					continue;
 				
-				if(biomes.isEmpty()) {
-					found = pos;
-					foundBiome = null;
-					return;
-				}
+				if(shortCircuit) {
+					if(checkForValidBiome(world, realPos))
+						return;
 					
-				try {
-					short bid = world.getBiomeDataOracle().getBiomeAt(pos.getX(), pos.getY());
-					for(Biome b: biomes) {
-						if(bid == b.getIndex()) {
-							found = pos;
-							foundBiome = b;
-							return;
-						}
-					}
-				} catch (MinecraftInterfaceException e) {
-					AmidstLogger.error(e);
+				} else {
+					double curDistSq = pos.getDistanceSq(region.getCenter());
+					if(curDistSq < distSq && checkForValidBiome(world, realPos))
+						distSq = curDistSq;
 				}
 			}
+		}
+		
+		private boolean checkForValidBiome(World world, Coordinates pos) {
+			if(biomes.isEmpty()) {
+				found = pos;
+				foundBiome = null;
+				return true;
+			}
+				
+			try {
+				short bid = world.getBiomeDataOracle().getBiomeAt(pos.getX(), pos.getY());
+				for(Biome b: biomes) {
+					if(bid == b.getIndex()) {
+						found = pos;
+						foundBiome = b;
+						return false;
+					}
+				}
+			} catch (MinecraftInterfaceException e) {
+				AmidstLogger.error(e);
+			}
+			return false;
 		}
 		
 		public void addItemToWorldResult(WorldFilterResult result) {

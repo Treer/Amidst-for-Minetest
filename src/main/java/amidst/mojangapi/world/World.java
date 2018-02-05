@@ -88,7 +88,7 @@ public class World {
 			movablePlayerList,
 			recognisedVersion,
 			versionFeatures,
-			new CachedBiomeDataOracle(biomeDataOracle, Region.box(0, 0, 0, 0)),
+			new CachedBiomeDataOracle(biomeDataOracle, Region.EMPTY),
 			endIslandOracle,
 			slimeChunkOracle,
 			worldSpawnOracle,

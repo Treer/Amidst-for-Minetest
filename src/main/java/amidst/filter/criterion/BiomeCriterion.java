@@ -22,11 +22,13 @@ public class BiomeCriterion implements Criterion<BiomeCriterion.Result> {
 	
 	private final Region region;
 	private final Biome biome;
+	private final boolean shortCircuit;
 	private final boolean checkDistance;
 	
-	public BiomeCriterion(Region region, Biome biome, boolean check) {
+	public BiomeCriterion(Region region, Biome biome, boolean shortCircuit, boolean check) {
 		this.region = region;
 		this.biome = biome;
+		this.shortCircuit = shortCircuit;
 		checkDistance = check;
 	}
 	
@@ -42,6 +44,7 @@ public class BiomeCriterion implements Criterion<BiomeCriterion.Result> {
 	
 	public class Result extends SubRegionResult {
 		Coordinates found;
+		double distSq = Double.POSITIVE_INFINITY;
 
 		private Result() {
 			super(region);
@@ -51,34 +54,58 @@ public class BiomeCriterion implements Criterion<BiomeCriterion.Result> {
 		private Result(Result other) {
 			super(other);
 			found = other.found;
+			distSq = other.distSq;
 		}
 
 		@Override
-		protected boolean hasFound() {
-			return found != null;
+		protected Coordinates getFound() {
+			return found;
+		}
+		
+		@Override
+		protected Coordinates getCenter() {
+			return region.getCenter();
+		}
+		
+		@Override
+		protected boolean doShortCircuit() {
+			return shortCircuit;
 		}
 
 		@Override
-		protected void doCheckRegion(World world, Box region) {
+		protected void doCheckRegion(World world, Coordinates offset, Box region) {
+			BiomeData data;
 			try {
-				BiomeData data = world.getBiomeDataOracle().getBiomeData(region, true);
-				
-				Coordinates result = data.findFirst((x, y, b) -> {
-					if(b != biome.getIndex())
-						return null;
-					
-					Coordinates pos = region.getCorner().add(Coordinates.from(x, y, Resolution.QUARTER));
-					if(checkDistance && !BiomeCriterion.this.region.contains(pos))
-						return null;
-					return pos;
-				});
-				
-				if(result != null)
-					found = result;
-				
+				data = world.getBiomeDataOracle().getBiomeData(region.move(offset), true);
 			} catch (MinecraftInterfaceException e) {
 				AmidstLogger.error(e);
-			}		
+				return;
+			}
+			
+			Coordinates center = BiomeCriterion.this.region.getCenter();
+			Coordinates corner = region.getCorner();
+			
+			data.findFirst((x, y, b) -> {
+				if(b != biome.getIndex())
+					return null;
+					
+				Coordinates pos = corner.add(Coordinates.from(x, y, Resolution.QUARTER));
+				if(checkDistance && !BiomeCriterion.this.region.contains(pos))
+					return null;
+				
+				if(shortCircuit) {
+					found = pos.add(offset);
+					return found;
+				}
+				
+				double curDistSq = pos.getDistanceSq(center);
+				if(curDistSq < distSq) {
+					found = pos.add(offset);
+					distSq = curDistSq;
+				}
+				
+				return null;
+			});
 		}
 		
 		public void addItemToWorldResult(WorldFilterResult result) {

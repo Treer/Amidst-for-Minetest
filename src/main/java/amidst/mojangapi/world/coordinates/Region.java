@@ -4,6 +4,7 @@ import amidst.documentation.Immutable;
 
 @Immutable
 public abstract class Region {
+	public static final Region.Box EMPTY = box(0, 0, 0, 0);
 
 	private Region() {}
 	
@@ -29,9 +30,12 @@ public abstract class Region {
 	public abstract Region.Box getEnclosing();
 	
 	public abstract boolean contains(int x, int y);
-	public abstract boolean contains(Coordinates point);
 	public abstract boolean contains(Region other);
+	public boolean contains(Coordinates point) {
+		return contains(point.getX(), point.getY());
+	}
 	public abstract boolean intersectsWith(Region other);
+	public abstract double smallestDistanceTo(Coordinates point);
 	
 	public abstract Region move(int dx, int dy);
 	public abstract Region move(Coordinates offset);
@@ -134,10 +138,6 @@ public abstract class Region {
 		public boolean contains(int x, int y) {
 			return distanceSq(this.x, x, this.y, y) <= radiusSq;
 		}
-		@Override
-		public boolean contains(Coordinates point) {
-			return contains(point.getX(), point.getY());
-		}
 		
 		@Override
 		public boolean contains(Region other) {
@@ -151,6 +151,11 @@ public abstract class Region {
 					&& contains(other.getCornerNW())
 					&& contains(other.getCornerSE().substract(1, 1))
 					&& contains(other.getCornerNW().substract(0, 1));
+		}
+		
+		@Override
+		public double smallestDistanceTo(Coordinates point) {
+			return Math.max(0, point.getDistance(x, y) - radius);
 		}
 
 		@Override
@@ -255,15 +260,45 @@ public abstract class Region {
 		public boolean contains(int posX, int posY) {
 			return posX >= getXMin() && posX < getXMax() && posY >= getYMin() && posY < getYMax();
 		}
-
-		@Override
-		public boolean contains(Coordinates pos) {
-			return contains(pos.getX(), pos.getY());
-		}
 		
 		@Override
 		public boolean contains(Region other) {
 			return contains(other.getCornerNW()) && contains(other.getCornerSE().substract(1, 1));
+		}
+		
+		@Override
+		public double smallestDistanceTo(Coordinates point) {
+			int x = point.getX(), y = point.getY();
+			
+			/* Nine cases:
+			 * 
+			 *  1   4   7
+			 *    *---*
+			 *  2 | 5 | 8
+			 *    *---*
+			 *  3   6   9
+			 */	
+			if(x < xMin) {
+				if(y < yMin)
+					return point.getDistance(xMin, yMin); // case 1
+				else if(y < yMax)
+					return xMin - x; // case 2
+				else return point.getDistance(xMin, yMax); // case 3
+				
+			} else if(x < xMax) {
+				if(y < yMin)
+					return yMin - y; // case 4
+				else if(y < yMax)
+					return 0; // case 5
+				else return y - yMax; // case 6
+				
+			} else {
+				if(y < yMin)
+					return point.getDistance(xMax, yMin); // case 7
+				else if(y < yMax)
+					return x - xMax; // case 8
+				else return point.getDistance(xMax, yMax); // case 9
+			}
 		}
 
 		@Override
