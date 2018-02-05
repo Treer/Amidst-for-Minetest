@@ -19,6 +19,12 @@ public class WorldFilterResult {
 	public static class ResultItem {
 		public Biome biome;
 		public final EnumSet<DefaultWorldIconTypes> icons = EnumSet.noneOf(DefaultWorldIconTypes.class);
+		
+		public void setBiome(Biome b) {
+			if(biome != null && biome != b)
+				throw new IllegalArgumentException("biome already set!");
+			biome = b;
+		}
 	}
 	
 	private Set<String> optionalGoals = new HashSet<>();

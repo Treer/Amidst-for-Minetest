@@ -17,11 +17,10 @@ import com.google.gson.JsonParseException;
 
 import amidst.documentation.GsonObject;
 import amidst.documentation.JsonField;
-import amidst.filter.BiomeConstraint;
 import amidst.filter.Criterion;
-import amidst.filter.StructureConstraint;
 import amidst.filter.criterion.MatchSomeCriterion;
-import amidst.filter.criterion.SimpleCriterion;
+import amidst.filter.criterion.BiomeCriterion;
+import amidst.filter.criterion.StructureCriterion;
 import amidst.mojangapi.world.biome.Biome;
 import amidst.mojangapi.world.coordinates.Coordinates;
 import amidst.mojangapi.world.coordinates.Region;
@@ -126,27 +125,13 @@ public class CriterionJsonBase extends CriterionJson {
 		List<Criterion<?>> list = new ArrayList<>();
 		
 		if(structSet.isEmpty()) {
-			for(Biome b: biomeSet) {
-				list.add(new SimpleCriterion(
-					new BiomeConstraint(region, b, isChecked)
-				));
-			}
-		} else if(biomeSet.isEmpty()) {
-			for(DefaultWorldIconTypes struct: structSet) {
-				list.add(new SimpleCriterion(
-					new StructureConstraint(region, struct, null, isChecked)
-				));
-			}
+			for(Biome b: biomeSet)
+				list.add(new BiomeCriterion(region, b, isChecked));
 		} else {
-			for(Biome b: biomeSet) {
-				for(DefaultWorldIconTypes struct: structSet) {
-					list.add(new SimpleCriterion(
-						new StructureConstraint(region, struct, b, isChecked)
-					));
-				}
+			for(DefaultWorldIconTypes struct: structSet) {
+				list.add(new StructureCriterion(region, struct, biomeSet, isChecked));
 			}
 		}
-		
 		
 		if(list.size() == 1)
 			return Optional.of(list.get(0));
@@ -183,7 +168,7 @@ public class CriterionJsonBase extends CriterionJson {
 			DefaultWorldIconTypes struct = DefaultWorldIconTypes.getByName(structName.toLowerCase());
 			if(struct == null)
 				ctx.error("the structure " + structName + " doesn't exist");
-			else if(StructureConstraint.UNSUPPORTED_STRUCTURES.contains(struct))
+			else if(StructureCriterion.UNSUPPORTED_STRUCTURES.contains(struct))
 				ctx.error("the structure " + structName + " isn't supported");
 			else structSet.add(struct);
 		}
