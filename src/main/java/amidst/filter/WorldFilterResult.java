@@ -12,13 +12,13 @@ import amidst.mojangapi.world.World;
 import amidst.mojangapi.world.WorldOptions;
 import amidst.mojangapi.world.biome.Biome;
 import amidst.mojangapi.world.coordinates.Coordinates;
-import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
+import amidst.mojangapi.world.icon.type.StructureType;
 
 public class WorldFilterResult {
 	
 	public static class ResultItem {
 		public Biome biome;
-		public final EnumSet<DefaultWorldIconTypes> icons = EnumSet.noneOf(DefaultWorldIconTypes.class);
+		public final EnumSet<StructureType> structures = EnumSet.noneOf(StructureType.class);
 		
 		public void setBiome(Biome b) {
 			if(biome != null && biome != b)
@@ -76,11 +76,11 @@ public class WorldFilterResult {
 			ResultItem item = e.getValue();
 			if(item.biome != null) {
 				str.append(item.biome.getName());
-				if(!item.icons.isEmpty())
+				if(!item.structures.isEmpty())
 					str.append("; ");
 					
 			}
-			str.append(item.icons.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
+			str.append(item.structures.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
 		}
 		str.append("\n}");
 		

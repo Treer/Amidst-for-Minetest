@@ -24,7 +24,7 @@ import amidst.filter.criterion.StructureCriterion;
 import amidst.mojangapi.world.biome.Biome;
 import amidst.mojangapi.world.coordinates.Coordinates;
 import amidst.mojangapi.world.coordinates.Region;
-import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
+import amidst.mojangapi.world.icon.type.StructureType;
 
 @GsonObject
 public class CriterionJsonBase extends CriterionJson {
@@ -84,7 +84,7 @@ public class CriterionJsonBase extends CriterionJson {
 			ctx.error("the radius must be strictly positive (is " + radius + ")");
 		
 		Collection<Biome> biomeSet = getBiomeSet(ctx);
-		Collection<DefaultWorldIconTypes> structSet = getStructureSet(ctx);
+		Collection<StructureType> structSet = getStructureSet(ctx);
 		if(biomeSet.isEmpty() && structSet.isEmpty())
 			ctx.error("the biome list can't be empty if no structure is specified");
 		
@@ -128,7 +128,7 @@ public class CriterionJsonBase extends CriterionJson {
 			for(Biome b: biomeSet)
 				list.add(new BiomeCriterion(region, b, true, isChecked));
 		} else {
-			for(DefaultWorldIconTypes struct: structSet) {
+			for(StructureType struct: structSet) {
 				list.add(new StructureCriterion(region, struct, biomeSet, true, isChecked));
 			}
 		}
@@ -159,17 +159,15 @@ public class CriterionJsonBase extends CriterionJson {
 		return biomeSet;
 	}
 
-	private Collection<DefaultWorldIconTypes> getStructureSet(CriterionParseContext ctx) {	
-		Set<DefaultWorldIconTypes> structSet = new HashSet<>();
+	private Collection<StructureType> getStructureSet(CriterionParseContext ctx) {	
+		Set<StructureType> structSet = new HashSet<>();
 		if(structures == null)
 			return structSet;
 		
 		for(String structName: this.structures) {
-			DefaultWorldIconTypes struct = DefaultWorldIconTypes.getByName(structName.toLowerCase());
+			StructureType struct = StructureType.getByName(structName.toLowerCase());
 			if(struct == null)
 				ctx.error("the structure " + structName + " doesn't exist");
-			else if(StructureCriterion.UNSUPPORTED_STRUCTURES.contains(struct))
-				ctx.error("the structure " + structName + " isn't supported");
 			else structSet.add(struct);
 		}
 		return structSet;

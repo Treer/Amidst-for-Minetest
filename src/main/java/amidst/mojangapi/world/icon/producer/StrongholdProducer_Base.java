@@ -9,7 +9,7 @@ import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.biome.Biome;
 import amidst.mojangapi.world.coordinates.Coordinates;
 import amidst.mojangapi.world.icon.WorldIcon;
-import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
+import amidst.mojangapi.world.icon.type.StructureType;
 import amidst.mojangapi.world.oracle.BiomeDataOracle;
 
 @ThreadSafe
@@ -86,12 +86,7 @@ public abstract class StrongholdProducer_Base extends CachedWorldIconProducer {
 	}
 
 	private WorldIcon createWorldIcon(Coordinates coordinates) {
-		return new WorldIcon(
-				coordinates,
-				DefaultWorldIconTypes.STRONGHOLD.getLabel(),
-				DefaultWorldIconTypes.STRONGHOLD.getImage(),
-				Dimension.OVERWORLD,
-				false);
+		return StructureType.STRONGHOLD.getIconType().makeIcon(coordinates, Dimension.OVERWORLD, false);
 	}
 
 	// This function depends on the Minecraft version, subclasses may override.

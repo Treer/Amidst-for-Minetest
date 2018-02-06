@@ -91,14 +91,14 @@ public class WorldFilter {
 		
 		WorldFilterResult result = new WorldFilterResult(world);
 		
-		addItemsOfMatchedCriteria(result, results, match);
-		
 		for(Map.Entry<String, Criterion<?>> e: criteria.entrySet()) {
 			if(isValid(results, world, offset, e.getValue())) {
 				result.addOptionalGoal(e.getKey());
 				addItemsOfMatchedCriteria(result, results, e.getValue());
 			}
 		}
+		
+		addItemsOfMatchedCriteria(result, results, match);
 			
 		return Optional.of(result);
 	}

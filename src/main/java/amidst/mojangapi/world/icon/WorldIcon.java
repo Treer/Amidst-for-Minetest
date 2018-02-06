@@ -25,7 +25,7 @@ public class WorldIcon {
 		this.image = image;
 		this.dimension = dimension;
 		this.displayDimension = displayDimension;
-	}
+	}	
 
 	public Coordinates getCoordinates() {
 		return coordinates;

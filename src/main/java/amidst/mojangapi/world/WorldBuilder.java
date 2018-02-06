@@ -17,9 +17,9 @@ import amidst.mojangapi.world.icon.locationchecker.TempleLocationChecker;
 import amidst.mojangapi.world.icon.locationchecker.VillageLocationChecker;
 import amidst.mojangapi.world.icon.producer.PlayerProducer;
 import amidst.mojangapi.world.icon.producer.StructureProducer;
-import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
 import amidst.mojangapi.world.icon.type.EndCityWorldIconTypeProvider;
 import amidst.mojangapi.world.icon.type.ImmutableWorldIconTypeProvider;
+import amidst.mojangapi.world.icon.type.StructureType;
 import amidst.mojangapi.world.icon.type.TempleWorldIconTypeProvider;
 import amidst.mojangapi.world.oracle.BiomeDataOracle;
 import amidst.mojangapi.world.oracle.EndIslandOracle;
@@ -127,7 +127,7 @@ public class WorldBuilder {
 								seed,
 								biomeDataOracle,
 								versionFeatures.getValidBiomesForStructure_Village()),
-						new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.VILLAGE),
+						new ImmutableWorldIconTypeProvider(StructureType.VILLAGE),
 						Dimension.OVERWORLD,
 						false),
 				new StructureProducer<>(
@@ -144,7 +144,7 @@ public class WorldBuilder {
 						Resolution.CHUNK,
 						8,
 						versionFeatures.getMineshaftAlgorithmFactory().apply(seed),
-						new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.MINESHAFT),
+						new ImmutableWorldIconTypeProvider(StructureType.MINESHAFT),
 						Dimension.OVERWORLD,
 						false),
 				new StructureProducer<>(
@@ -155,14 +155,14 @@ public class WorldBuilder {
 								biomeDataOracle,
 								versionFeatures.getValidBiomesAtMiddleOfChunk_OceanMonument(),
 								versionFeatures.getValidBiomesForStructure_OceanMonument()),
-						new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.OCEAN_MONUMENT),
+						new ImmutableWorldIconTypeProvider(StructureType.OCEAN_MONUMENT),
 						Dimension.OVERWORLD,
 						false),
 				new StructureProducer<>(
 						Resolution.NETHER_CHUNK,
 						88,
 						new NetherFortressAlgorithm(seed),
-						new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.NETHER_FORTRESS),
+						new ImmutableWorldIconTypeProvider(StructureType.NETHER_FORTRESS),
 						Dimension.NETHER,
 						false),
 				new StructureProducer<>(

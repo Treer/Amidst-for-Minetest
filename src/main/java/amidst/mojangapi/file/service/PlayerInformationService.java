@@ -21,14 +21,13 @@ import amidst.mojangapi.file.json.player.SimplePlayerJson;
 import amidst.mojangapi.file.json.player.TexturesJson;
 import amidst.mojangapi.file.json.player.TexturesPropertyJson;
 import amidst.mojangapi.world.icon.WorldIconImage;
-import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
 import amidst.mojangapi.world.player.PlayerInformation;
 import amidst.parsing.FormatException;
 import amidst.parsing.json.JsonReader;
 
 @Immutable
 public class PlayerInformationService {
-	private static final WorldIconImage DEFAULT_HEAD = DefaultWorldIconTypes.PLAYER.getImage();
+	private static final WorldIconImage DEFAULT_HEAD = PlayerInformation.PLAYER_ICON.getImage();
 
 	private static final String SIMPLE_PLAYER_SKIN_URL = "http://s3.amazonaws.com/MinecraftSkins/";
 	private static final String PLAYERNAME_TO_UUID = "https://api.mojang.com/users/profiles/minecraft/";

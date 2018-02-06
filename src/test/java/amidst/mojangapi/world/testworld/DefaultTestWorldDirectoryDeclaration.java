@@ -4,8 +4,10 @@ import java.util.function.Function;
 
 import amidst.documentation.Immutable;
 import amidst.mojangapi.world.World;
+import amidst.mojangapi.world.icon.WorldIconType;
 import amidst.mojangapi.world.icon.producer.WorldIconProducer;
-import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
+import amidst.mojangapi.world.icon.type.EndCityWorldIconTypeProvider;
+import amidst.mojangapi.world.icon.type.StructureType;
 import amidst.mojangapi.world.testworld.file.TestWorldDirectoryDeclaration;
 import amidst.mojangapi.world.testworld.io.TestWorldEntrySerializer;
 import amidst.mojangapi.world.testworld.storage.json.BiomeDataJson;
@@ -74,52 +76,52 @@ public enum DefaultTestWorldDirectoryDeclaration {
 			.entry(TestWorldEntryNames.VILLAGES,          CoordinatesCollectionJson.class)
 				.serializer(TestWorldEntrySerializer::writeJson)
 				.deserializer(TestWorldEntrySerializer::readCoordinatesCollection)
-				.extractor(worldIconExtractor(World::getVillageProducer,        DefaultWorldIconTypes.VILLAGE))
+				.extractor(worldIconExtractor(World::getVillageProducer,        StructureType.VILLAGE))
 				.equalityChecker(CoordinatesCollectionJson::equals)
 			.entry(TestWorldEntryNames.WITCH_HUTS,        CoordinatesCollectionJson.class)
 				.serializer(TestWorldEntrySerializer::writeJson)
 				.deserializer(TestWorldEntrySerializer::readCoordinatesCollection)
-				.extractor(worldIconExtractor(World::getTempleProducer,         DefaultWorldIconTypes.WITCH))
+				.extractor(worldIconExtractor(World::getTempleProducer,         StructureType.WITCH))
 				.equalityChecker(CoordinatesCollectionJson::equals)
 			.entry(TestWorldEntryNames.JUNGLE_TEMPLES,    CoordinatesCollectionJson.class)
 				.serializer(TestWorldEntrySerializer::writeJson)
 				.deserializer(TestWorldEntrySerializer::readCoordinatesCollection)
-				.extractor(worldIconExtractor(World::getTempleProducer,         DefaultWorldIconTypes.JUNGLE))
+				.extractor(worldIconExtractor(World::getTempleProducer,         StructureType.JUNGLE))
 				.equalityChecker(CoordinatesCollectionJson::equals)
 			.entry(TestWorldEntryNames.DESERT_TEMPLES,    CoordinatesCollectionJson.class)
 				.serializer(TestWorldEntrySerializer::writeJson)
 				.deserializer(TestWorldEntrySerializer::readCoordinatesCollection)
-				.extractor(worldIconExtractor(World::getTempleProducer,         DefaultWorldIconTypes.DESERT))
+				.extractor(worldIconExtractor(World::getTempleProducer,         StructureType.DESERT))
 				.equalityChecker(CoordinatesCollectionJson::equals)
 			.entry(TestWorldEntryNames.IGLOOS,            CoordinatesCollectionJson.class)
 				.serializer(TestWorldEntrySerializer::writeJson)
 				.deserializer(TestWorldEntrySerializer::readCoordinatesCollection)
-				.extractor(worldIconExtractor(World::getTempleProducer,         DefaultWorldIconTypes.IGLOO))
+				.extractor(worldIconExtractor(World::getTempleProducer,         StructureType.IGLOO))
 				.equalityChecker(CoordinatesCollectionJson::equals)
 			.entry(TestWorldEntryNames.MINESHAFTS,        CoordinatesCollectionJson.class)
 				.serializer(TestWorldEntrySerializer::writeJson)
 				.deserializer(TestWorldEntrySerializer::readCoordinatesCollection)
-				.extractor(worldIconExtractor(World::getMineshaftProducer,      DefaultWorldIconTypes.MINESHAFT))
+				.extractor(worldIconExtractor(World::getMineshaftProducer,      StructureType.MINESHAFT))
 				.equalityChecker(CoordinatesCollectionJson::equals)
 			.entry(TestWorldEntryNames.OCEAN_MONUMENTS,   CoordinatesCollectionJson.class)
 				.serializer(TestWorldEntrySerializer::writeJson)
 				.deserializer(TestWorldEntrySerializer::readCoordinatesCollection)
-				.extractor(worldIconExtractor(World::getOceanMonumentProducer,  DefaultWorldIconTypes.OCEAN_MONUMENT))
+				.extractor(worldIconExtractor(World::getOceanMonumentProducer,  StructureType.OCEAN_MONUMENT))
 				.equalityChecker(CoordinatesCollectionJson::equals)
 			.entry(TestWorldEntryNames.NETHER_FORTRESSES, CoordinatesCollectionJson.class)
 				.serializer(TestWorldEntrySerializer::writeJson)
 				.deserializer(TestWorldEntrySerializer::readCoordinatesCollection)
-				.extractor(worldIconExtractor(World::getNetherFortressProducer, DefaultWorldIconTypes.NETHER_FORTRESS))
+				.extractor(worldIconExtractor(World::getNetherFortressProducer, StructureType.NETHER_FORTRESS))
 				.equalityChecker(CoordinatesCollectionJson::equals)
 			.entry(TestWorldEntryNames.LIKELY_END_CITY,   CoordinatesCollectionJson.class)
 				.serializer(TestWorldEntrySerializer::writeJson)
 				.deserializer(TestWorldEntrySerializer::readCoordinatesCollection)
-				.extractor(endCityExtractor(DefaultWorldIconTypes.END_CITY))
+				.extractor(endCityExtractor(EndCityWorldIconTypeProvider.END_CITY_ICON))
 				.equalityChecker(CoordinatesCollectionJson::equals)
 			.entry(TestWorldEntryNames.POSSIBLE_END_CITY, CoordinatesCollectionJson.class)
 				.serializer(TestWorldEntrySerializer::writeJson)
 				.deserializer(TestWorldEntrySerializer::readCoordinatesCollection)
-				.extractor(endCityExtractor(DefaultWorldIconTypes.POSSIBLE_END_CITY))
+				.extractor(endCityExtractor(EndCityWorldIconTypeProvider.POSSIBLE_END_CITY_ICON))
 				.equalityChecker(CoordinatesCollectionJson::equals)
 			.create();
 		// @formatter:on
@@ -138,16 +140,16 @@ public enum DefaultTestWorldDirectoryDeclaration {
 
 	private Function<World, CoordinatesCollectionJson> worldIconExtractor(
 			Function<World, WorldIconProducer<Void>> producer,
-			DefaultWorldIconTypes worldIconType) {
+			StructureType worldIconType) {
 		return world -> CoordinatesCollectionJson.extractWorldIcons(
 				producer.apply(world),
-				worldIconType.getLabel(),
+				worldIconType.getIconType().getLabel(),
 				corner -> null,
 				OVERWORLD_FRAGMENTS_AROUND_ORIGIN,
 				MINIMAL_NUMBER_OF_COORDINATES);
 	}
 
-	private Function<World, CoordinatesCollectionJson> endCityExtractor(DefaultWorldIconTypes worldIconType) {
+	private Function<World, CoordinatesCollectionJson> endCityExtractor(WorldIconType worldIconType) {
 		return world -> CoordinatesCollectionJson.extractWorldIcons(
 				world.getEndCityProducer(),
 				worldIconType.getLabel(),

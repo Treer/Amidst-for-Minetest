@@ -3,11 +3,12 @@ package amidst.mojangapi.world.player;
 import amidst.documentation.Immutable;
 import amidst.documentation.NotNull;
 import amidst.mojangapi.world.icon.WorldIconImage;
-import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
+import amidst.mojangapi.world.icon.WorldIconType;
 
 @Immutable
 public class PlayerInformation {
-	private static final WorldIconImage DEFAULT_HEAD = DefaultWorldIconTypes.PLAYER.getImage();
+	public static final WorldIconType PLAYER_ICON = new WorldIconType("player", "Player");
+	private static final WorldIconImage DEFAULT_HEAD = PLAYER_ICON.getImage();
 	private static final PlayerInformation THE_SINGLEPLAYER_PLAYER = new PlayerInformation(
 			null,
 			"The Singleplayer Player",

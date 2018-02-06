@@ -10,6 +10,7 @@ import amidst.mojangapi.world.icon.WorldIcon;
 import amidst.mojangapi.world.icon.producer.CachedWorldIconProducer;
 import amidst.mojangapi.world.icon.producer.SpawnProducer;
 import amidst.mojangapi.world.icon.producer.WorldIconProducer;
+import amidst.mojangapi.world.icon.type.StructureType;
 import amidst.mojangapi.world.oracle.BiomeDataOracle;
 import amidst.mojangapi.world.oracle.CachedBiomeDataOracle;
 import amidst.mojangapi.world.oracle.EndIsland;
@@ -195,5 +196,32 @@ public class World {
 	 */
 	public void dispose() {
 		onDisposeWorld.accept(this);
+	}
+	
+	public WorldIconProducer<Void> getStructureProducer(StructureType type) {
+		switch(type) {
+		case MINESHAFT:
+			return getMineshaftProducer();
+			
+		case NETHER_FORTRESS:
+			return getNetherFortressProducer();
+			
+		case OCEAN_MONUMENT:
+			return getOceanMonumentProducer();
+			
+		case STRONGHOLD:
+			return getStrongholdProducer();
+			
+		case VILLAGE:
+			return getVillageProducer();
+
+		case DESERT:
+		case IGLOO:
+		case JUNGLE:
+		case WITCH:
+			return getTempleProducer();
+		}
+		
+		throw new IllegalArgumentException("unexpected structure type");
 	}
 }

@@ -8,8 +8,8 @@ import amidst.mojangapi.world.coordinates.Coordinates;
 import amidst.mojangapi.world.coordinates.Region;
 import amidst.mojangapi.world.coordinates.Resolution;
 import amidst.mojangapi.world.icon.WorldIcon;
+import amidst.mojangapi.world.icon.WorldIconType;
 import amidst.mojangapi.world.icon.locationchecker.LocationChecker;
-import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
 import amidst.mojangapi.world.icon.type.WorldIconTypeProvider;
 
 @ThreadSafe
@@ -52,13 +52,11 @@ public class StructureProducer<T> extends WorldIconProducer<T> {
 	
 	private void generateAt(int x, int y, Consumer<WorldIcon> consumer, T additionalData) {
 		if(checker.isValidLocation(x, y)) {
-			DefaultWorldIconTypes worldIconType = provider.get(x, y, additionalData);
+			WorldIconType worldIconType = provider.get(x, y, additionalData);
 			if (worldIconType != null) {
 				consumer.accept(
-						new WorldIcon(
+						worldIconType.makeIcon(
 								Coordinates.from(x, y, resolution).add(offsetInWorld, offsetInWorld),
-								worldIconType.getLabel(),
-								worldIconType.getImage(),
 								dimension,
 								displayDimension));
 			}

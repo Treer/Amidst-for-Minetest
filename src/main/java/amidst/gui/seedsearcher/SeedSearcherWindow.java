@@ -174,11 +174,11 @@ public class SeedSearcherWindow {
 			ResultItem item = entry.getValue(); 
 			if(item.biome != null) {
 				txt += item.biome.getName();
-				if(!item.icons.isEmpty())
+				if(!item.structures.isEmpty())
 					txt += " with ";
 			}
 			
-			txt += item.icons.stream().map(s -> s.getLabel()).collect(Collectors.joining(", "));
+			txt += item.structures.stream().map(s -> s.getIconType().getLabel()).collect(Collectors.joining(", "));
 					
 			return txt;
 		}));
