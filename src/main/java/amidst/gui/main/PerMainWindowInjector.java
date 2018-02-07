@@ -85,7 +85,13 @@ public class PerMainWindowInjector {
 					dialogs,
 					runningLauncherProfile.createSilentPlayerlessCopy(),
 					threadMaster.getWorkerExecutor());
-			this.seedSearcherWindow = new SeedSearcherWindow(metadata, settings, dialogs, worldSwitcher, seedSearcher);
+			this.seedSearcherWindow = new SeedSearcherWindow(
+					metadata,
+					settings,
+					dialogs,
+					worldSwitcher,
+					viewerFacadeReference::get,
+					seedSearcher);
 		} else {
 			this.seedSearcher = null;
 			this.seedSearcherWindow = null;

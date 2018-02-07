@@ -1,6 +1,7 @@
 package amidst.mojangapi.world;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Consumer;
 
 import amidst.documentation.Immutable;
@@ -11,6 +12,7 @@ import amidst.mojangapi.minecraftinterface.MinecraftInterface;
 import amidst.mojangapi.minecraftinterface.MinecraftInterfaceException;
 import amidst.mojangapi.minecraftinterface.RecognisedVersion;
 import amidst.mojangapi.world.coordinates.Resolution;
+import amidst.mojangapi.world.icon.WorldIcon;
 import amidst.mojangapi.world.icon.locationchecker.EndCityLocationChecker;
 import amidst.mojangapi.world.icon.locationchecker.NetherFortressAlgorithm;
 import amidst.mojangapi.world.icon.locationchecker.TempleLocationChecker;
@@ -57,7 +59,8 @@ public class WorldBuilder {
 	public World from(
 			MinecraftInterface minecraftInterface,
 			Consumer<World> onDisposeWorld,
-			WorldOptions worldOptions) throws MinecraftInterfaceException {
+			WorldOptions worldOptions,
+			List<WorldIcon> specialWorldIcons) throws MinecraftInterfaceException {
 		BiomeDataOracle biomeDataOracle = new RawBiomeDataOracle(minecraftInterface);
 		VersionFeatures versionFeatures = DefaultVersionFeatures.create(minecraftInterface.getRecognisedVersion());
 		return create(
@@ -70,7 +73,8 @@ public class WorldBuilder {
 				new HeuristicWorldSpawnOracle(
 						worldOptions.getWorldSeed().getLong(),
 						biomeDataOracle,
-						versionFeatures.getValidBiomesForStructure_Spawn()));
+						versionFeatures.getValidBiomesForStructure_Spawn()),
+				specialWorldIcons);
 	}
 
 	public World fromSaveGame(MinecraftInterface minecraftInterface, Consumer<World> onDisposeWorld, SaveGame saveGame)
@@ -89,7 +93,8 @@ public class WorldBuilder {
 				movablePlayerList,
 				versionFeatures,
 				new RawBiomeDataOracle(minecraftInterface),
-				new ImmutableWorldSpawnOracle(saveGame.getWorldSpawn()));
+				new ImmutableWorldSpawnOracle(saveGame.getWorldSpawn()),
+				null);
 	}
 
 	private World create(
@@ -99,7 +104,8 @@ public class WorldBuilder {
 			MovablePlayerList movablePlayerList,
 			VersionFeatures versionFeatures,
 			BiomeDataOracle biomeDataOracle,
-			WorldSpawnOracle worldSpawnOracle) throws MinecraftInterfaceException {
+			WorldSpawnOracle worldSpawnOracle,
+			List<WorldIcon> specialWorldIcons) throws MinecraftInterfaceException {
 		RecognisedVersion recognisedVersion = minecraftInterface.getRecognisedVersion();
 		WorldSeed worldSeed = worldOptions.getWorldSeed();
 		long seed = worldSeed.getLong();
@@ -171,6 +177,7 @@ public class WorldBuilder {
 						new EndCityLocationChecker(seed),
 						new EndCityWorldIconTypeProvider(),
 						Dimension.END,
-						false));
+						false),
+				specialWorldIcons);
 	}
 }

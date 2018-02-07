@@ -108,11 +108,12 @@ public class BiomeCriterion implements Criterion<BiomeCriterion.Result> {
 			});
 		}
 		
-		public void addItemToWorldResult(WorldFilterResult result) {
+		@Override
+		public void addItemToWorldResult(WorldFilterResult result, String goal) {
 			if(found == null)
 				return;
 			
-			result.getItemFor(found).setBiome(biome);
+			result.getItemFor(found, goal).setBiome(biome);
 		}
 		
 		@Override

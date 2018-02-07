@@ -12,7 +12,7 @@ public interface CriterionResult {
 	
 	public void checkRegionAndUpdate(ResultsMap map, World world, Coordinates offset, Region.Box region);
 	
-	public default void addItemToWorldResult(WorldFilterResult result) {
+	public default void addItemToWorldResult(WorldFilterResult result, String goal) {
 		//Do nothing
 	}
 	

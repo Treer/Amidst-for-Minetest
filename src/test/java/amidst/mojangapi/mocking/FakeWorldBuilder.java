@@ -38,7 +38,8 @@ public class FakeWorldBuilder {
 		return builder.from(
 				realMinecraftInterface,
 				NOOP,
-				worldDeclaration.getWorldOptions());
+				worldDeclaration.getWorldOptions(),
+				null);
 	}
 
 	public World createFakeWorld(TestWorldDirectory worldDeclaration) throws MinecraftInterfaceException {
@@ -66,7 +67,8 @@ public class FakeWorldBuilder {
 		return builder.from(
 				createFakeMinecraftInterface(worldMetadata, quarterBiomeData, fullBiomeData),
 				NOOP,
-				worldOptions
+				worldOptions,
+				null
 			);
 	}
 

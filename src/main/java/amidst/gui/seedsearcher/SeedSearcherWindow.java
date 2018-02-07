@@ -9,10 +9,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
@@ -43,11 +46,16 @@ import amidst.filter.json.WorldFilterJson;
 import amidst.filter.json.WorldFilterParseException;
 import amidst.gui.main.MainWindowDialogs;
 import amidst.gui.main.WorldSwitcher;
+import amidst.gui.main.viewer.ViewerFacade;
 import amidst.logging.AmidstLogger;
 import amidst.logging.AmidstMessageBox;
+import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.WorldSeed;
 import amidst.mojangapi.world.WorldType;
 import amidst.mojangapi.world.coordinates.Coordinates;
+import amidst.mojangapi.world.icon.WorldIcon;
+import amidst.mojangapi.world.icon.WorldIconMarkers;
+import amidst.mojangapi.world.icon.WorldIconType;
 import net.miginfocom.swing.MigLayout;
 
 @NotThreadSafe
@@ -58,6 +66,7 @@ public class SeedSearcherWindow {
 	
 	private final MainWindowDialogs dialogs;
 	private final WorldSwitcher worldSwitcher;
+	Supplier<ViewerFacade> viewerFacadeSupplier;
 
 	private final SeedSearcher seedSearcher;
 
@@ -70,6 +79,7 @@ public class SeedSearcherWindow {
 	private final JLabel goalsMetLabel;
 	private final JList<WorldFilterResult> worldsFoundList;
 	private final JList<Map.Entry<Coordinates, ResultItem>> worldItemsList;
+	private final Map<String, Color> goalsColorMap;
 	private final JFrame frame;
 	
 	private final DefaultListModel<WorldFilterResult> worldsFound;
@@ -82,11 +92,13 @@ public class SeedSearcherWindow {
 			AmidstSettings settings,
 			MainWindowDialogs dialogs,
 			WorldSwitcher worldSwitcher,
+			Supplier<ViewerFacade> viewerFacadeSupplier,
 			SeedSearcher seedSearcher) {
 		this.metadata = metadata;
 		this.settings = settings;
 		this.dialogs = dialogs;
 		this.worldSwitcher = worldSwitcher;
+		this.viewerFacadeSupplier = viewerFacadeSupplier;
 		this.seedSearcher = seedSearcher;
 		this.worldsFound = new DefaultListModel<>();
 		this.worldItems = new DefaultListModel<>();
@@ -99,6 +111,7 @@ public class SeedSearcherWindow {
 		this.goalsMetLabel = new JLabel();
 		this.worldsFoundList = createWorldsFoundList();
 		this.worldItemsList = createWorldItemsList();
+		this.goalsColorMap = new HashMap<>();
 		this.frame = createFrame();
 		
 		tryReloadFromFile();
@@ -181,8 +194,11 @@ public class SeedSearcherWindow {
 			txt += item.structures.stream().map(s -> s.getIconType().getLabel()).collect(Collectors.joining(", "));
 					
 			return txt;
-		}));
-		//TODO display some sort of marker on the world?
+		}, entry -> goalsColorMap.get(entry.getValue().goal)));
+		
+		result.addListSelectionListener(e -> {
+			onWorldItemSelected(result.getSelectedValue(), e.getValueIsAdjusting());
+		});
 		return result;
 	}
 
@@ -327,39 +343,86 @@ public class SeedSearcherWindow {
 			worldsFoundLabel.setText("1 world found" + searchedText + ":");
 		else worldsFoundLabel.setText(nbWorlds + " worlds found" + searchedText + ":");
 		
-		if (seedSearcher.isSearching() && !seedSearcher.isStopRequested()) {
-			searchButton.setText("Stop");
-			searchQueryTextArea.setEditable(false);
-			worldTypeComboBox.setEnabled(false);
-			searchContinuouslyCheckBox.setEnabled(false);
-			searchMaxHitsSpinner.setEnabled(false);
-		} else {
-			searchButton.setText("Search");
-			searchQueryTextArea.setEditable(true);
-			worldTypeComboBox.setEnabled(true);
-			searchContinuouslyCheckBox.setEnabled(true);
-			searchMaxHitsSpinner.setEnabled(searchContinuouslyCheckBox.isSelected());
-		}
+		setSearchComponentsEnabled(!seedSearcher.isSearching() || seedSearcher.isStopRequested());
+	}
+	
+	@CalledOnlyBy(AmidstThread.EDT)
+	private void setSearchComponentsEnabled(boolean enabled) {
+		searchButton.setText(enabled ? "Search" : "Stop");
+		searchQueryTextArea.setEditable(enabled);
+		worldTypeComboBox.setEnabled(enabled);
+		searchContinuouslyCheckBox.setEnabled(enabled);
+		searchMaxHitsSpinner.setEnabled(enabled && searchContinuouslyCheckBox.isSelected());
+	}
+	
+	@CalledOnlyBy(AmidstThread.EDT)
+	private void onWorldItemSelected(Map.Entry<Coordinates, ResultItem> entry, boolean isAdjusting) {
+		if(isAdjusting || entry == null)
+			return;
+		
+		ViewerFacade viewFacade = viewerFacadeSupplier.get();
+		if(viewFacade != null)
+			viewFacade.centerOn(entry.getKey());
 	}
 	
 	@CalledOnlyBy(AmidstThread.EDT)
 	private void onWorldSelected(WorldFilterResult result, boolean isAdjusting) {
-		worldItems.clear();
+		fillColorMap(result);	
+		fillWorldItems(result);
+		goalsMetLabel.setText(makeGoalsMetText(result));
 		
-		if(result == null) {
-			goalsMetLabel.setText("Goals met: -");
+		if(!isAdjusting && result != null)
+			worldSwitcher.displayWorld(result.getWorldOptions(), buildMarkerList(result));
+	}
+	
+	@CalledOnlyBy(AmidstThread.EDT)
+	private void fillColorMap(WorldFilterResult result) {
+		goalsColorMap.clear();
+		
+		if(result == null)
 			return;
-		}
-				
-		String goals = result.getOptionalGoals().stream().collect(Collectors.joining(", ", "Goals met: ", ""));
-		goalsMetLabel.setText(goals);
+		
+		MarkerColorIterator colors = new MarkerColorIterator(0.9f, 0.9f);
+		for(String goal: result.getOptionalGoals())
+			goalsColorMap.put(goal, colors.next());
+		goalsColorMap.put(null, colors.next());
+
+	}
+	
+	@CalledOnlyBy(AmidstThread.EDT)
+	private void fillWorldItems(WorldFilterResult result) {
+		worldItems.clear();
+		if(result == null)
+			return;
 		
 		result.getItems().entrySet().stream()
 			.sorted(Comparator.comparingDouble(e -> e.getKey().getDistanceSq(Coordinates.origin())))
 			.forEachOrdered(worldItems::addElement);
+	}
+	
+	@CalledOnlyBy(AmidstThread.EDT)
+	private String makeGoalsMetText(WorldFilterResult result) {
+		if(result == null)
+			return "Goals met: -";
 		
-		if(!isAdjusting)
-			worldSwitcher.displayWorld(result.getWorldOptions());
+		return result.getOptionalGoals().stream()
+			.map(goal -> {
+				Color c = goalsColorMap.get(goal);
+				int r = c.getRed(), g = c.getGreen(), b = c.getBlue();
+				return String.format("<font color=#%02x%02x%02x>●</font> %s", r, g, b, goal);
+			})
+			.collect(Collectors.joining(", ", "<html>Goals met: ", "</html>"));
+	}
+	
+	@CalledOnlyBy(AmidstThread.EDT)
+	private List<WorldIcon> buildMarkerList(WorldFilterResult result) {
+		List<WorldIcon> markers = new ArrayList<>();
+		for(Map.Entry<Coordinates, ResultItem> entries: result.getItems().entrySet()) {
+			Color color = goalsColorMap.get(entries.getValue().goal);
+			WorldIconType type = WorldIconMarkers.makeMarkerType(color);
+			markers.add(type.makeIcon(entries.getKey(), Dimension.OVERWORLD, false));
+		}
+		return markers;
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)

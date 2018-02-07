@@ -127,11 +127,12 @@ public class StructureCriterion implements Criterion<StructureCriterion.Result> 
 			return false;
 		}
 		
-		public void addItemToWorldResult(WorldFilterResult result) {
+		@Override
+		public void addItemToWorldResult(WorldFilterResult result, String goal) {
 			if(found == null)
 				return;
 			
-			ResultItem item = result.getItemFor(found);
+			ResultItem item = result.getItemFor(found, goal);
 			item.structures.add(structure);
 			
 			if(foundBiome != null)

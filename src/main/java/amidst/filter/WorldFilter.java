@@ -47,15 +47,15 @@ public class WorldFilter {
 		return center == null ? Coordinates.origin() : center;
 	}
 	
-	private void addItemsOfMatchedCriteria(WorldFilterResult result, ResultsMap map, Criterion<?> criterion) {
+	private void addItemsOfMatchedCriteria(WorldFilterResult result, ResultsMap map, Criterion<?> criterion, String goal) {
 		CriterionResult r = map.remove(criterion);
 		if(r == null || r.hasMatched() != TriState.TRUE)
 			return;
 		
-		r.addItemToWorldResult(result);
+		r.addItemToWorldResult(result, goal);
 		
 		for(Criterion<?> c: criterion.getChildren())
-			addItemsOfMatchedCriteria(result, map, c);
+			addItemsOfMatchedCriteria(result, map, c, goal);
 		
 	}
 
@@ -94,11 +94,11 @@ public class WorldFilter {
 		for(Map.Entry<String, Criterion<?>> e: criteria.entrySet()) {
 			if(isValid(results, world, offset, e.getValue())) {
 				result.addOptionalGoal(e.getKey());
-				addItemsOfMatchedCriteria(result, results, e.getValue());
+				addItemsOfMatchedCriteria(result, results, e.getValue(), e.getKey());
 			}
 		}
 		
-		addItemsOfMatchedCriteria(result, results, match);
+		addItemsOfMatchedCriteria(result, results, match, null);
 			
 		return Optional.of(result);
 	}

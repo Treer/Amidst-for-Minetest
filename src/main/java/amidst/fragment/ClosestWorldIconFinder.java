@@ -34,7 +34,7 @@ public class ClosestWorldIconFinder {
 		for (FragmentGraphItem fragmentGraphItem : graph) {
 			Fragment fragment = fragmentGraphItem.getFragment();
 			for (LayerDeclaration declaration : declarations) {
-				if (declaration.isVisible()) {
+				if (declaration.isVisible() && declaration.isSelectable()) {
 					int layerId = declaration.getLayerId();
 					for (WorldIcon icon : fragment.getWorldIcons(layerId)) {
 						updateClosest(icon);

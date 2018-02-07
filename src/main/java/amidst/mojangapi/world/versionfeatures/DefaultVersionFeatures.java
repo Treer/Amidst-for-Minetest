@@ -65,7 +65,8 @@ public enum DefaultVersionFeatures {
 						LayerIds.PLAYER,
 						LayerIds.VILLAGE,
 						LayerIds.MINESHAFT,
-						LayerIds.NETHER_FORTRESS
+						LayerIds.NETHER_FORTRESS,
+						LayerIds.MARKER_ICONS
 				).sinceExtend(RecognisedVersion._12w21a,
 						LayerIds.TEMPLE
 				).sinceExtend(RecognisedVersion._1_8,

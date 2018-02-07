@@ -19,6 +19,11 @@ public class WorldFilterResult {
 	public static class ResultItem {
 		public Biome biome;
 		public final EnumSet<StructureType> structures = EnumSet.noneOf(StructureType.class);
+		public final String goal;
+		
+		private ResultItem(String goal) {
+			this.goal = goal;
+		}
 		
 		public void setBiome(Biome b) {
 			if(biome != null && biome != b)
@@ -52,8 +57,8 @@ public class WorldFilterResult {
 		return Collections.unmodifiableSet(optionalGoals);
 	}
 	
-	public ResultItem getItemFor(Coordinates coordinates) {
-		return items.computeIfAbsent(coordinates, c -> new ResultItem());
+	public ResultItem getItemFor(Coordinates coordinates, String goal) {
+		return items.computeIfAbsent(coordinates, c -> new ResultItem(goal));
 	}
 	
 	public Map<Coordinates, ResultItem> getItems() {
@@ -81,6 +86,9 @@ public class WorldFilterResult {
 					
 			}
 			str.append(item.structures.stream().map(i -> i.toString()).collect(Collectors.joining(", ")));
+			
+			if(item.goal != null)
+				str.append(" - " + item.goal);
 		}
 		str.append("\n}");
 		
