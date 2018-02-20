@@ -8,7 +8,7 @@ import amidst.documentation.Immutable;
 import amidst.mojangapi.file.json.ReleaseType;
 
 @Immutable
-@GsonObject
+@GsonObject(ignoreUnknown=true)
 public class LauncherProfileJson {
 	/**
 	 * Some Minecraft installations have a profile with the key "(Default)" and
