@@ -41,6 +41,7 @@ public class World {
 	private final WorldIconProducer<Void> templeProducer;
 	private final WorldIconProducer<Void> mineshaftProducer;
 	private final WorldIconProducer<Void> oceanMonumentProducer;
+	private final WorldIconProducer<Void> woodlandMansionProducer;
 	private final WorldIconProducer<Void> netherFortressProducer;
 	private final WorldIconProducer<List<EndIsland>> endCityProducer;
 	private final StaticWorldIconProducer specialIconsProducer;
@@ -61,6 +62,7 @@ public class World {
 			WorldIconProducer<Void> templeProducer,
 			WorldIconProducer<Void> mineshaftProducer,
 			WorldIconProducer<Void> oceanMonumentProducer,
+			WorldIconProducer<Void> woodlandMansionProducer,
 			WorldIconProducer<Void> netherFortressProducer,
 			WorldIconProducer<List<EndIsland>> endCityProducer,
 			List<WorldIcon> specialWorldIcons) {
@@ -79,6 +81,7 @@ public class World {
 		this.villageProducer = villageProducer;
 		this.templeProducer = templeProducer;
 		this.mineshaftProducer = mineshaftProducer;
+		this.woodlandMansionProducer = woodlandMansionProducer;
 		this.oceanMonumentProducer = oceanMonumentProducer;
 		this.netherFortressProducer = netherFortressProducer;
 		this.endCityProducer = endCityProducer;
@@ -103,6 +106,7 @@ public class World {
 			templeProducer,
 			mineshaftProducer,
 			oceanMonumentProducer,
+			woodlandMansionProducer,
 			netherFortressProducer,
 			endCityProducer,
 			specialIconsProducer.getWorldIcons()
@@ -182,6 +186,10 @@ public class World {
 		return specialIconsProducer;
 	}
 
+	public WorldIconProducer<Void> getWoodlandMansionProducer() {
+		return woodlandMansionProducer;
+	}
+
 	public WorldIcon getSpawnWorldIcon() {
 		return spawnProducer.getFirstWorldIcon();
 	}
@@ -227,6 +235,9 @@ public class World {
 			
 		case VILLAGE:
 			return getVillageProducer();
+			
+		case WOODLAND_MANSION:
+			return getWoodlandMansionProducer();
 
 		case DESERT:
 		case IGLOO:

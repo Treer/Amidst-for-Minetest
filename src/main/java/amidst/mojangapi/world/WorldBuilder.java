@@ -17,6 +17,7 @@ import amidst.mojangapi.world.icon.locationchecker.EndCityLocationChecker;
 import amidst.mojangapi.world.icon.locationchecker.NetherFortressAlgorithm;
 import amidst.mojangapi.world.icon.locationchecker.TempleLocationChecker;
 import amidst.mojangapi.world.icon.locationchecker.VillageLocationChecker;
+import amidst.mojangapi.world.icon.locationchecker.WoodlandMansionLocationChecker;
 import amidst.mojangapi.world.icon.producer.PlayerProducer;
 import amidst.mojangapi.world.icon.producer.StructureProducer;
 import amidst.mojangapi.world.icon.type.EndCityWorldIconTypeProvider;
@@ -162,6 +163,17 @@ public class WorldBuilder {
 								versionFeatures.getValidBiomesAtMiddleOfChunk_OceanMonument(),
 								versionFeatures.getValidBiomesForStructure_OceanMonument()),
 						new ImmutableWorldIconTypeProvider(StructureType.OCEAN_MONUMENT),
+						Dimension.OVERWORLD,
+						false),
+				new StructureProducer<>(
+						Resolution.CHUNK,
+						8,
+						new WoodlandMansionLocationChecker(
+								seed,
+								biomeDataOracle,
+								versionFeatures.getValidBiomesForStructure_WoodlandMansion()
+						),
+						new ImmutableWorldIconTypeProvider(StructureType.WOODLAND_MANSION),
 						Dimension.OVERWORLD,
 						false),
 				new StructureProducer<>(

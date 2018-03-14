@@ -18,6 +18,7 @@ public enum StructureType {
 	VILLAGE             ("village",           "Village"),
 	WITCH               ("witch",             "Witch Hut"),
 	OCEAN_MONUMENT      ("ocean_monument",    "Ocean Monument"),
+	WOODLAND_MANSION    ("woodland_mansion",  "Woodland Mansion"),
 	IGLOO               ("igloo",             "Igloo"),
 	MINESHAFT           ("mineshaft",         "Mineshaft");
 	// @formatter:on
