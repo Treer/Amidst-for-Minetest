@@ -27,13 +27,13 @@ public enum StructureType {
 	private static Map<String, StructureType> createTypeMap() {
 		Map<String, StructureType> result = new HashMap<>();
 		for (StructureType type : EnumSet.allOf(StructureType.class)) {
-			result.put(type.getName(), type);
+			result.put(type.getLabel().toLowerCase(), type);
 		}
 		return Collections.unmodifiableMap(result);
 	}
 
-	public static StructureType getByName(String name) {
-		return typeMap.get(name);
+	public static StructureType getByLabel(String label) {
+		return typeMap.get(label.toLowerCase());
 	}
 
 	public static boolean exists(String name) {
@@ -48,6 +48,10 @@ public enum StructureType {
 	
 	public String getName() {
 		return icon.getName();
+	}
+	
+	public String getLabel() {
+		return icon.getLabel();
 	}
 	
 	public WorldIconType getIconType() {

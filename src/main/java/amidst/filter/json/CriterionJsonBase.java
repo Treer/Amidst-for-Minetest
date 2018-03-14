@@ -165,7 +165,7 @@ public class CriterionJsonBase extends CriterionJson {
 			return structSet;
 		
 		for(String structName: this.structures) {
-			StructureType struct = StructureType.getByName(structName.toLowerCase());
+			StructureType struct = StructureType.getByLabel(structName);
 			if(struct == null)
 				ctx.error("the structure " + structName + " doesn't exist");
 			else structSet.add(struct);
