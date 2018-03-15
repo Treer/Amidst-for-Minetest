@@ -3,6 +3,7 @@ package amidst.parsing.json;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.InvalidParameterException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,6 @@ import com.google.gson.stream.JsonWriter;
 
 import amidst.documentation.GsonObject;
 import amidst.documentation.JsonField;
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * This class generates TypeAdapters which verify that the json data contains all required fields
@@ -31,7 +31,6 @@ import edu.emory.mathcs.backport.java.util.Arrays;
  */
 public class StrictTypeAdapterFactory implements TypeAdapterFactory {
 	
-	@SuppressWarnings("unchecked")
 	private static List<Class<?>> BASE_JSON_CLASSES = Arrays.asList(new Class<?>[]{
 		Map.class,
 		List.class,
