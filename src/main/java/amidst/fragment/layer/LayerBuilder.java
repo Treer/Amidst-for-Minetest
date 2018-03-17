@@ -84,21 +84,23 @@ public class LayerBuilder {
 	private List<LayerDeclaration> createDeclarations(AmidstSettings settings, VersionFeatures versionFeatures) {
 		LayerDeclaration[] declarations = new LayerDeclaration[LayerIds.NUMBER_OF_LAYERS];
 		// @formatter:off
-		declare(settings, declarations, versionFeatures, LayerIds.ALPHA,           null,                false, Settings.createImmutable(true));
-		declare(settings, declarations, versionFeatures, LayerIds.BIOME_DATA,      Dimension.OVERWORLD, false, Settings.createImmutable(true));
-		declare(settings, declarations, versionFeatures, LayerIds.END_ISLANDS,     Dimension.END,       false, Settings.createImmutable(true));
-		declare(settings, declarations, versionFeatures, LayerIds.BACKGROUND,      null,                false, Settings.createImmutable(true));
-		declare(settings, declarations, versionFeatures, LayerIds.SLIME,           Dimension.OVERWORLD, false, settings.showSlimeChunks);
-		declare(settings, declarations, versionFeatures, LayerIds.GRID,            null,                true,  settings.showGrid);
-		declare(settings, declarations, versionFeatures, LayerIds.SPAWN,           Dimension.OVERWORLD, false, settings.showSpawn);
-		declare(settings, declarations, versionFeatures, LayerIds.STRONGHOLD,      Dimension.OVERWORLD, false, settings.showStrongholds);
-		declare(settings, declarations, versionFeatures, LayerIds.PLAYER,          null,                false, settings.showPlayers);
-		declare(settings, declarations, versionFeatures, LayerIds.VILLAGE,         Dimension.OVERWORLD, false, settings.showVillages);
-		declare(settings, declarations, versionFeatures, LayerIds.TEMPLE,          Dimension.OVERWORLD, false, settings.showTemples);
-		declare(settings, declarations, versionFeatures, LayerIds.MINESHAFT,       Dimension.OVERWORLD, false, settings.showMineshafts);
-		declare(settings, declarations, versionFeatures, LayerIds.OCEAN_MONUMENT,  Dimension.OVERWORLD, false, settings.showOceanMonuments);
-		declare(settings, declarations, versionFeatures, LayerIds.NETHER_FORTRESS, Dimension.OVERWORLD, false, settings.showNetherFortresses);
-		declare(settings, declarations, versionFeatures, LayerIds.END_CITY,        Dimension.END,       false, settings.showEndCities);
+		declare(settings, declarations, versionFeatures, LayerIds.ALPHA,           null,                false, Settings.createImmutable(true), false);
+		declare(settings, declarations, versionFeatures, LayerIds.BIOME_DATA,      Dimension.OVERWORLD, false, Settings.createImmutable(true), false);
+		declare(settings, declarations, versionFeatures, LayerIds.END_ISLANDS,     Dimension.END,       false, Settings.createImmutable(true), false);
+		declare(settings, declarations, versionFeatures, LayerIds.BACKGROUND,      null,                false, Settings.createImmutable(true), false);
+		declare(settings, declarations, versionFeatures, LayerIds.SLIME,           Dimension.OVERWORLD, false, settings.showSlimeChunks      , false);
+		declare(settings, declarations, versionFeatures, LayerIds.GRID,            null,                true,  settings.showGrid             , false);
+		declare(settings, declarations, versionFeatures, LayerIds.SPAWN,           Dimension.OVERWORLD, false, settings.showSpawn            , true);
+		declare(settings, declarations, versionFeatures, LayerIds.STRONGHOLD,      Dimension.OVERWORLD, false, settings.showStrongholds      , true);
+		declare(settings, declarations, versionFeatures, LayerIds.PLAYER,          null,                false, settings.showPlayers          , true);
+		declare(settings, declarations, versionFeatures, LayerIds.VILLAGE,         Dimension.OVERWORLD, false, settings.showVillages         , true);
+		declare(settings, declarations, versionFeatures, LayerIds.TEMPLE,          Dimension.OVERWORLD, false, settings.showTemples          , true);
+		declare(settings, declarations, versionFeatures, LayerIds.MINESHAFT,       Dimension.OVERWORLD, false, settings.showMineshafts       , true);
+		declare(settings, declarations, versionFeatures, LayerIds.OCEAN_MONUMENT,  Dimension.OVERWORLD, false, settings.showOceanMonuments   , true);
+		declare(settings, declarations, versionFeatures, LayerIds.WOODLAND_MANSION,Dimension.OVERWORLD, false, settings.showWoodlandMansions , true);
+		declare(settings, declarations, versionFeatures, LayerIds.NETHER_FORTRESS, Dimension.OVERWORLD, false, settings.showNetherFortresses , true);
+		declare(settings, declarations, versionFeatures, LayerIds.END_CITY,        Dimension.END,       false, settings.showEndCities        , true);
+		declare(settings, declarations, versionFeatures, LayerIds.MARKER_ICONS,    Dimension.OVERWORLD, false, Settings.createImmutable(true), false);
 		// @formatter:on
 		return Collections.unmodifiableList(Arrays.asList(declarations));
 	}
@@ -110,14 +112,16 @@ public class LayerBuilder {
 			int layerId,
 			Dimension dimension,
 			boolean drawUnloaded,
-			Setting<Boolean> isVisibleSetting) {
+			Setting<Boolean> isVisibleSetting,
+			boolean isSelectable) {
 		declarations[layerId] = new LayerDeclaration(
 				layerId,
 				dimension,
 				drawUnloaded,
 				versionFeatures.hasLayer(layerId),
 				isVisibleSetting,
-				settings.enableAllLayers);
+				settings.enableAllLayers,
+				isSelectable);
 	}
 
 	/**
@@ -142,8 +146,10 @@ public class LayerBuilder {
 				new WorldIconLoader<>(declarations.get(LayerIds.TEMPLE),          world.getTempleProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.MINESHAFT),       world.getMineshaftProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.OCEAN_MONUMENT),  world.getOceanMonumentProducer()),
+				new WorldIconLoader<>(declarations.get(LayerIds.WOODLAND_MANSION),world.getWoodlandMansionProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.NETHER_FORTRESS), world.getNetherFortressProducer()),
-				new WorldIconLoader<>(declarations.get(LayerIds.END_CITY),        world.getEndCityProducer(), Fragment::getEndIslands)
+				new WorldIconLoader<>(declarations.get(LayerIds.END_CITY),        world.getEndCityProducer(), Fragment::getEndIslands),
+				new WorldIconLoader<>(declarations.get(LayerIds.MARKER_ICONS),    world.getSpecialIconsProducer())
 		));
 		// @formatter:on
 	}
@@ -169,8 +175,10 @@ public class LayerBuilder {
 				new WorldIconDrawer(declarations.get(LayerIds.TEMPLE),          zoom, worldIconSelection),
 				new WorldIconDrawer(declarations.get(LayerIds.MINESHAFT),       zoom, worldIconSelection),
 				new WorldIconDrawer(declarations.get(LayerIds.OCEAN_MONUMENT),  zoom, worldIconSelection),
+				new WorldIconDrawer(declarations.get(LayerIds.WOODLAND_MANSION),zoom, worldIconSelection),
 				new WorldIconDrawer(declarations.get(LayerIds.NETHER_FORTRESS), zoom, worldIconSelection),
-				new WorldIconDrawer(declarations.get(LayerIds.END_CITY),        zoom, worldIconSelection)
+				new WorldIconDrawer(declarations.get(LayerIds.END_CITY),        zoom, worldIconSelection),
+				new WorldIconDrawer(declarations.get(LayerIds.MARKER_ICONS),    zoom, worldIconSelection)
 		));
 		// @formatter:on
 	}

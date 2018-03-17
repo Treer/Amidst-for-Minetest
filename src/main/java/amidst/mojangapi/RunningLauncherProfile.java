@@ -1,6 +1,7 @@
 package amidst.mojangapi;
 
 import java.io.IOException;
+import java.util.List;
 
 import amidst.documentation.ThreadSafe;
 import amidst.mojangapi.file.LauncherProfile;
@@ -13,8 +14,8 @@ import amidst.mojangapi.minecraftinterface.local.LocalMinecraftInterface;
 import amidst.mojangapi.minecraftinterface.local.LocalMinecraftInterfaceCreationException;
 import amidst.mojangapi.world.World;
 import amidst.mojangapi.world.WorldBuilder;
-import amidst.mojangapi.world.WorldSeed;
-import amidst.mojangapi.world.WorldType;
+import amidst.mojangapi.world.WorldOptions;
+import amidst.mojangapi.world.icon.WorldIcon;
 
 @ThreadSafe
 public class RunningLauncherProfile {
@@ -57,17 +58,30 @@ public class RunningLauncherProfile {
 			throw new RuntimeException("exception while duplicating the RunningLauncherProfile", e);
 		}
 	}
+	
+	/**
+	 * Due to the limitation of the minecraft interface, you can only work with
+	 * one world at a time. Creating a new world will break all previously
+	 * created world objects.
+	 * @throws MinecraftInterfaceException 
+	 * @throws IllegalStateException 
+	 */
+	public synchronized World createWorld(WorldOptions worldOptions)
+			throws IllegalStateException,
+			MinecraftInterfaceException {
+		return createWorld(worldOptions, null);
+	}
 
 	/**
 	 * Due to the limitation of the minecraft interface, you can only work with
 	 * one world at a time. Creating a new world will break all previously
 	 * created world objects.
 	 */
-	public synchronized World createWorldFromSeed(WorldSeed worldSeed, WorldType worldType)
+	public synchronized World createWorld(WorldOptions worldOptions, List<WorldIcon> specialWorldIcons)
 			throws IllegalStateException,
 			MinecraftInterfaceException {
 		if (currentWorld == null) {
-			currentWorld = worldBuilder.fromSeed(minecraftInterface, this::unlock, worldSeed, worldType);
+			currentWorld = worldBuilder.from(minecraftInterface, this::unlock, worldOptions, specialWorldIcons);
 			return currentWorld;
 		} else {
 			throw new IllegalStateException(

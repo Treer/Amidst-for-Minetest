@@ -6,6 +6,7 @@ import amidst.logging.AmidstMessageBox;
 import amidst.mojangapi.minecraftinterface.MinecraftInterfaceException;
 import amidst.mojangapi.world.biome.Biome;
 import amidst.mojangapi.world.biome.UnknownBiomeIndexException;
+import amidst.mojangapi.world.icon.WorldIconType;
 import amidst.mojangapi.world.oracle.BiomeDataOracle;
 
 @ThreadSafe
@@ -17,17 +18,17 @@ public class TempleWorldIconTypeProvider implements WorldIconTypeProvider<Void> 
 	}
 
 	@Override
-	public DefaultWorldIconTypes get(int chunkX, int chunkY, Void additionalData) {
+	public WorldIconType get(int chunkX, int chunkY, Void additionalData) {
 		try {
 			Biome biome = biomeDataOracle.getBiomeAtMiddleOfChunk(chunkX, chunkY);
 			if (biome == Biome.swampland) {
-				return DefaultWorldIconTypes.WITCH;
+				return StructureType.WITCH.getIconType();
 			} else if (biome == Biome.jungle || biome == Biome.jungleHills) {
-				return DefaultWorldIconTypes.JUNGLE;
+				return StructureType.JUNGLE.getIconType();
 			} else if (biome == Biome.desert || biome == Biome.desertHills) {
-				return DefaultWorldIconTypes.DESERT;
+				return StructureType.DESERT.getIconType();
 			} else if (biome == Biome.icePlains || biome == Biome.coldTaiga) {
-				return DefaultWorldIconTypes.IGLOO;
+				return StructureType.IGLOO.getIconType();
 			} else {
 				String message = "No known structure for this biome type: " + biome.getName();
 				AmidstLogger.error(message);

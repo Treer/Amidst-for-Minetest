@@ -19,6 +19,8 @@ import amidst.mojangapi.world.icon.producer.StrongholdProducer_Base;
 import amidst.mojangapi.world.icon.producer.StrongholdProducer_Buggy128Algorithm;
 import amidst.mojangapi.world.icon.producer.StrongholdProducer_Original;
 import amidst.mojangapi.world.oracle.BiomeDataOracle;
+import amidst.util.QuadFunction;
+import amidst.util.TriFunction;
 
 @Immutable
 public enum DefaultVersionFeatures {
@@ -35,7 +37,8 @@ public enum DefaultVersionFeatures {
 				INSTANCE.mineshaftAlgorithmFactory.getValue(version),
 				INSTANCE.oceanMonumentLocationCheckerFactory.getValue(version),
 				INSTANCE.validBiomesAtMiddleOfChunk_OceanMonument.getValue(version),
-				INSTANCE.validBiomesForStructure_OceanMonument.getValue(version));
+				INSTANCE.validBiomesForStructure_OceanMonument.getValue(version),
+				INSTANCE.validBiomesForStructure_WoodlandMansion.getValue(version));
 	}
 
 	private final VersionFeature<List<Integer>> enabledLayers;
@@ -48,6 +51,7 @@ public enum DefaultVersionFeatures {
 	private final VersionFeature<QuadFunction<Long, BiomeDataOracle, List<Biome>, List<Biome>, LocationChecker>> oceanMonumentLocationCheckerFactory;
 	private final VersionFeature<List<Biome>> validBiomesAtMiddleOfChunk_OceanMonument;
 	private final VersionFeature<List<Biome>> validBiomesForStructure_OceanMonument;
+	private final VersionFeature<List<Biome>> validBiomesForStructure_WoodlandMansion;
 
 	private DefaultVersionFeatures() {
 		// @formatter:off
@@ -63,7 +67,8 @@ public enum DefaultVersionFeatures {
 						LayerIds.PLAYER,
 						LayerIds.VILLAGE,
 						LayerIds.MINESHAFT,
-						LayerIds.NETHER_FORTRESS
+						LayerIds.NETHER_FORTRESS,
+						LayerIds.MARKER_ICONS
 				).sinceExtend(RecognisedVersion._12w21a,
 						LayerIds.TEMPLE
 				).sinceExtend(RecognisedVersion._1_8,
@@ -71,6 +76,8 @@ public enum DefaultVersionFeatures {
 				).sinceExtend(RecognisedVersion._15w31c,
 						LayerIds.END_ISLANDS,
 						LayerIds.END_CITY
+				).sinceExtend(RecognisedVersion._16w43a,
+						LayerIds.WOODLAND_MANSION
 				).construct();
 		this.validBiomesForStructure_Spawn = VersionFeature.<Biome> listBuilder()
 				.init(
@@ -179,6 +186,11 @@ public enum DefaultVersionFeatures {
 						Biome.frozenOceanM,
 						Biome.riverM,
 						Biome.frozenRiverM
+				).construct();
+		this.validBiomesForStructure_WoodlandMansion = VersionFeature.<Biome> listBuilder()
+				.init(
+						Biome.roofedForest,
+						Biome.roofedForestM
 				).construct();
 		// @formatter:on
 	}

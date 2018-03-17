@@ -15,7 +15,8 @@ public class LayerDeclaration {
 	private final boolean isSupportedInCurrentVersion;
 	private final Setting<Boolean> isVisibleSetting;
 	private final Setting<Boolean> enableAllLayersSetting;
-
+	private final boolean isSelectable;
+	
 	private volatile boolean isVisible;
 
 	/**
@@ -27,13 +28,15 @@ public class LayerDeclaration {
 			boolean drawUnloaded,
 			boolean isSupportedInCurrentVersion,
 			Setting<Boolean> isVisibleSetting,
-			Setting<Boolean> enableAllLayersSetting) {
+			Setting<Boolean> enableAllLayersSetting,
+			boolean isSelectable) {
 		this.layerId = layerId;
 		this.dimension = dimension;
 		this.isDrawUnloaded = drawUnloaded;
 		this.isSupportedInCurrentVersion = isSupportedInCurrentVersion;
 		this.isVisibleSetting = isVisibleSetting;
 		this.enableAllLayersSetting = enableAllLayersSetting;
+		this.isSelectable = isSelectable;
 	}
 
 	public int getLayerId() {
@@ -46,6 +49,10 @@ public class LayerDeclaration {
 
 	public boolean isVisible() {
 		return isVisible;
+	}
+	
+	public boolean isSelectable() {
+		return isSelectable;
 	}
 
 	/**

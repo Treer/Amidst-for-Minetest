@@ -24,6 +24,7 @@ public class AmidstSettings {
 	public final Setting<Boolean> showTemples;
 	public final Setting<Boolean> showMineshafts;
 	public final Setting<Boolean> showOceanMonuments;
+	public final Setting<Boolean> showWoodlandMansions;
 	public final Setting<Boolean> showNetherFortresses;
 	public final Setting<Boolean> showEndCities;
 	public final Setting<Boolean> enableAllLayers;
@@ -37,6 +38,7 @@ public class AmidstSettings {
 
 	public final Setting<String> lastProfile;
 	public final Setting<String> worldType;
+	public final Setting<String> searchJsonFile;
 
 	/**
 	 * This is not persisted.
@@ -56,6 +58,7 @@ public class AmidstSettings {
 		showTemples                = Settings.createBoolean(  preferences, "templeIcons",          true);
 		showMineshafts             = Settings.createBoolean(  preferences, "mineshaftIcons",       false);
 		showOceanMonuments         = Settings.createBoolean(  preferences, "oceanMonumentIcons",   true);
+		showWoodlandMansions       = Settings.createBoolean(  preferences, "woodlandMansionIcons", true);
 		showNetherFortresses       = Settings.createBoolean(  preferences, "netherFortressIcons",  false);
 		showEndCities              = Settings.createBoolean(  preferences, "endCityIcons",         false);
 		enableAllLayers            = Settings.createBoolean(  preferences, "enableAllLayers",      false);
@@ -69,6 +72,8 @@ public class AmidstSettings {
 	
 		lastProfile                = Settings.createString(   preferences, "profile",              "");
 		worldType                  = Settings.createString(   preferences, "worldType",            WorldType.PROMPT_EACH_TIME);
+		searchJsonFile             = Settings.createString(   preferences, "searchJsonFile",       "search.json");
+		
 		biomeProfileSelection = new BiomeProfileSelection(BiomeProfile.getDefaultProfile());
 		// @formatter:on
 	}

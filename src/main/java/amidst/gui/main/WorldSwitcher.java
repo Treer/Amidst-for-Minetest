@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -20,8 +21,8 @@ import amidst.mojangapi.RunningLauncherProfile;
 import amidst.mojangapi.file.MinecraftInstallation;
 import amidst.mojangapi.minecraftinterface.MinecraftInterfaceException;
 import amidst.mojangapi.world.World;
-import amidst.mojangapi.world.WorldSeed;
-import amidst.mojangapi.world.WorldType;
+import amidst.mojangapi.world.WorldOptions;
+import amidst.mojangapi.world.icon.WorldIcon;
 import amidst.mojangapi.world.player.MovablePlayerList;
 import amidst.mojangapi.world.player.WorldPlayerType;
 import amidst.parsing.FormatException;
@@ -60,12 +61,17 @@ public class WorldSwitcher {
 		this.dialogs = dialogs;
 		this.menuBarSupplier = menuBarSupplier;
 	}
+	
+	@CalledOnlyBy(AmidstThread.EDT)
+	public void displayWorld(WorldOptions worldOptions) {
+		displayWorld(worldOptions, null);
+	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
-	public void displayWorld(WorldSeed worldSeed, WorldType worldType) {
+	public void displayWorld(WorldOptions worldOptions, List<WorldIcon> specialWorldIcons) {
 		try {
 			clearViewerFacade();
-			setWorld(runningLauncherProfile.createWorldFromSeed(worldSeed, worldType));
+			setWorld(runningLauncherProfile.createWorld(worldOptions, specialWorldIcons));
 		} catch (IllegalStateException | MinecraftInterfaceException e) {
 			AmidstLogger.warn(e);
 			dialogs.displayError(e);
@@ -135,4 +141,5 @@ public class WorldSwitcher {
 	public void clearWorld() {
 		clearViewerFacade();
 	}
+
 }

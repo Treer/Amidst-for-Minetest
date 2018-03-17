@@ -11,6 +11,7 @@ import amidst.mojangapi.world.player.PlayerCoordinates;
 
 @ThreadSafe
 public class PlayerProducer extends CachedWorldIconProducer {
+	
 	private final MovablePlayerList movablePlayerList;
 
 	public PlayerProducer(MovablePlayerList movablePlayerList) {

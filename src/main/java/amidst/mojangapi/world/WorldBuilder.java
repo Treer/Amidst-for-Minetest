@@ -1,6 +1,7 @@
 package amidst.mojangapi.world;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Consumer;
 
 import amidst.documentation.Immutable;
@@ -11,21 +12,23 @@ import amidst.mojangapi.minecraftinterface.MinecraftInterface;
 import amidst.mojangapi.minecraftinterface.MinecraftInterfaceException;
 import amidst.mojangapi.minecraftinterface.RecognisedVersion;
 import amidst.mojangapi.world.coordinates.Resolution;
+import amidst.mojangapi.world.icon.WorldIcon;
 import amidst.mojangapi.world.icon.locationchecker.EndCityLocationChecker;
 import amidst.mojangapi.world.icon.locationchecker.NetherFortressAlgorithm;
 import amidst.mojangapi.world.icon.locationchecker.TempleLocationChecker;
 import amidst.mojangapi.world.icon.locationchecker.VillageLocationChecker;
+import amidst.mojangapi.world.icon.locationchecker.WoodlandMansionLocationChecker;
 import amidst.mojangapi.world.icon.producer.PlayerProducer;
-import amidst.mojangapi.world.icon.producer.SpawnProducer;
 import amidst.mojangapi.world.icon.producer.StructureProducer;
-import amidst.mojangapi.world.icon.type.DefaultWorldIconTypes;
 import amidst.mojangapi.world.icon.type.EndCityWorldIconTypeProvider;
 import amidst.mojangapi.world.icon.type.ImmutableWorldIconTypeProvider;
+import amidst.mojangapi.world.icon.type.StructureType;
 import amidst.mojangapi.world.icon.type.TempleWorldIconTypeProvider;
 import amidst.mojangapi.world.oracle.BiomeDataOracle;
 import amidst.mojangapi.world.oracle.EndIslandOracle;
 import amidst.mojangapi.world.oracle.HeuristicWorldSpawnOracle;
 import amidst.mojangapi.world.oracle.ImmutableWorldSpawnOracle;
+import amidst.mojangapi.world.oracle.RawBiomeDataOracle;
 import amidst.mojangapi.world.oracle.SlimeChunkOracle;
 import amidst.mojangapi.world.oracle.WorldSpawnOracle;
 import amidst.mojangapi.world.player.MovablePlayerList;
@@ -54,26 +57,25 @@ public class WorldBuilder {
 		this.seedHistoryLogger = seedHistoryLogger;
 	}
 
-	public World fromSeed(
+	public World from(
 			MinecraftInterface minecraftInterface,
 			Consumer<World> onDisposeWorld,
-			WorldSeed worldSeed,
-			WorldType worldType) throws MinecraftInterfaceException {
-		BiomeDataOracle biomeDataOracle = new BiomeDataOracle(minecraftInterface);
+			WorldOptions worldOptions,
+			List<WorldIcon> specialWorldIcons) throws MinecraftInterfaceException {
+		BiomeDataOracle biomeDataOracle = new RawBiomeDataOracle(minecraftInterface);
 		VersionFeatures versionFeatures = DefaultVersionFeatures.create(minecraftInterface.getRecognisedVersion());
 		return create(
 				minecraftInterface,
 				onDisposeWorld,
-				worldSeed,
-				worldType,
-				"",
+				worldOptions,
 				MovablePlayerList.dummy(),
 				versionFeatures,
 				biomeDataOracle,
 				new HeuristicWorldSpawnOracle(
-						worldSeed.getLong(),
+						worldOptions.getWorldSeed().getLong(),
 						biomeDataOracle,
-						versionFeatures.getValidBiomesForStructure_Spawn()));
+						versionFeatures.getValidBiomesForStructure_Spawn()),
+				specialWorldIcons);
 	}
 
 	public World fromSaveGame(MinecraftInterface minecraftInterface, Consumer<World> onDisposeWorld, SaveGame saveGame)
@@ -88,41 +90,38 @@ public class WorldBuilder {
 		return create(
 				minecraftInterface,
 				onDisposeWorld,
-				WorldSeed.fromSaveGame(saveGame.getSeed()),
-				saveGame.getWorldType(),
-				saveGame.getGeneratorOptions(),
+				WorldOptions.fromSaveGame(saveGame),
 				movablePlayerList,
 				versionFeatures,
-				new BiomeDataOracle(minecraftInterface),
-				new ImmutableWorldSpawnOracle(saveGame.getWorldSpawn()));
+				new RawBiomeDataOracle(minecraftInterface),
+				new ImmutableWorldSpawnOracle(saveGame.getWorldSpawn()),
+				null);
 	}
 
 	private World create(
 			MinecraftInterface minecraftInterface,
 			Consumer<World> onDisposeWorld,
-			WorldSeed worldSeed,
-			WorldType worldType,
-			String generatorOptions,
+			WorldOptions worldOptions,
 			MovablePlayerList movablePlayerList,
 			VersionFeatures versionFeatures,
 			BiomeDataOracle biomeDataOracle,
-			WorldSpawnOracle worldSpawnOracle) throws MinecraftInterfaceException {
+			WorldSpawnOracle worldSpawnOracle,
+			List<WorldIcon> specialWorldIcons) throws MinecraftInterfaceException {
 		RecognisedVersion recognisedVersion = minecraftInterface.getRecognisedVersion();
-		seedHistoryLogger.log(recognisedVersion, worldSeed);
+		WorldSeed worldSeed = worldOptions.getWorldSeed();
 		long seed = worldSeed.getLong();
-		minecraftInterface.createWorld(seed, worldType, generatorOptions);
+		seedHistoryLogger.log(recognisedVersion, worldSeed);
+		minecraftInterface.createWorld(seed, worldOptions.getWorldType(), worldOptions.getGeneratorOptions());
 		return new World(
 				onDisposeWorld,
-				worldSeed,
-				worldType,
-				generatorOptions,
+				worldOptions,
 				movablePlayerList,
 				recognisedVersion,
 				versionFeatures,
 				biomeDataOracle,
 				EndIslandOracle.from(seed),
 				new SlimeChunkOracle(seed),
-				new SpawnProducer(worldSpawnOracle),
+				worldSpawnOracle,
 				versionFeatures.getStrongholdProducerFactory().apply(
 						seed,
 						biomeDataOracle,
@@ -135,7 +134,7 @@ public class WorldBuilder {
 								seed,
 								biomeDataOracle,
 								versionFeatures.getValidBiomesForStructure_Village()),
-						new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.VILLAGE),
+						new ImmutableWorldIconTypeProvider(StructureType.VILLAGE),
 						Dimension.OVERWORLD,
 						false),
 				new StructureProducer<>(
@@ -152,7 +151,7 @@ public class WorldBuilder {
 						Resolution.CHUNK,
 						8,
 						versionFeatures.getMineshaftAlgorithmFactory().apply(seed),
-						new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.MINESHAFT),
+						new ImmutableWorldIconTypeProvider(StructureType.MINESHAFT),
 						Dimension.OVERWORLD,
 						false),
 				new StructureProducer<>(
@@ -163,14 +162,25 @@ public class WorldBuilder {
 								biomeDataOracle,
 								versionFeatures.getValidBiomesAtMiddleOfChunk_OceanMonument(),
 								versionFeatures.getValidBiomesForStructure_OceanMonument()),
-						new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.OCEAN_MONUMENT),
+						new ImmutableWorldIconTypeProvider(StructureType.OCEAN_MONUMENT),
+						Dimension.OVERWORLD,
+						false),
+				new StructureProducer<>(
+						Resolution.CHUNK,
+						8,
+						new WoodlandMansionLocationChecker(
+								seed,
+								biomeDataOracle,
+								versionFeatures.getValidBiomesForStructure_WoodlandMansion()
+						),
+						new ImmutableWorldIconTypeProvider(StructureType.WOODLAND_MANSION),
 						Dimension.OVERWORLD,
 						false),
 				new StructureProducer<>(
 						Resolution.NETHER_CHUNK,
 						88,
 						new NetherFortressAlgorithm(seed),
-						new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.NETHER_FORTRESS),
+						new ImmutableWorldIconTypeProvider(StructureType.NETHER_FORTRESS),
 						Dimension.NETHER,
 						false),
 				new StructureProducer<>(
@@ -179,6 +189,7 @@ public class WorldBuilder {
 						new EndCityLocationChecker(seed),
 						new EndCityWorldIconTypeProvider(),
 						Dimension.END,
-						false));
+						false),
+				specialWorldIcons);
 	}
 }
